@@ -31,10 +31,8 @@ public class Chip8Core {
     };
     private static final Random RANDOM_GENERATOR = new Random();
 
-    // program counter
-    int programCounter = 0;
-    // registers
-    byte[] V = new byte[16];
+    int PC = 0; // program counter
+    byte[] V = new byte[16]; // registers
     int I;
     byte delayTimer;
     byte soundTimer;
@@ -52,8 +50,12 @@ public class Chip8Core {
     private Chip8Error lastError = null;
 
     public Chip8Core() {
-        display = new Chip8DisplayImpl();
-        keyboard = new Chip8KeyboardImpl();
+        this(new Chip8DisplayImpl(), new Chip8KeyboardImpl());
+    }
+
+    Chip8Core(Chip8DisplayImpl display, Chip8KeyboardImpl keyboard) {
+        this.display = display;
+        this.keyboard = keyboard;
         loadDefaults();
     }
 
@@ -83,16 +85,16 @@ public class Chip8Core {
     }
 
     public Chip8Error executeNextInstruction() {
-        int instruction = ((memory[programCounter] & 0xFF) << 8) | (memory[programCounter + 1] & 0xFF);
-        Log.d("C8-VM", "Line " + ((programCounter - 0x200) / 2) + ", instr :" + Integer.toHexString(instruction));
-        programCounter += 2;
+        int instruction = ((memory[PC] & 0xFF) << 8) | (memory[PC + 1] & 0xFF);
+        Log.d("C8-VM", "Line " + ((PC - 0x200) / 2) + ", instr :" + Integer.toHexString(instruction));
+        PC += 2;
 
         if (!executeInstruction(instruction)) {
             lastError = new Chip8Error(
                     Chip8Error.Type.INVALID_INSTRUCTION,
                     null,
                     instruction,
-                    programCounter);
+                    PC);
         }
 
         if (lastError != null) {
@@ -112,7 +114,7 @@ public class Chip8Core {
 
         System.arraycopy(DEFAULT_SPRITES, 0, memory, 0, DEFAULT_SPRITES.length);
         Arrays.fill(memory, 0x200, 0x1000, (byte) 0);
-        programCounter = 0x200;
+        PC = 0x200;
 
         display.clear();
     }
@@ -191,29 +193,29 @@ public class Chip8Core {
         if (stackPointer == 0) {
             lastError = new Chip8Error(
                     Chip8Error.Type.STACK_UNDERFLOW,
-                    "Stack underflow error (RET instruction)", instr, programCounter);
+                    "Stack underflow error (RET instruction)", instr, PC);
             return;
         }
 
-        programCounter = stack[stackPointer];
+        PC = stack[stackPointer];
         stackPointer--;
     }
 
     private void op_1xxx_JP(int instr) {
-        programCounter = instr & 0x0FFF;
+        PC = instr & 0x0FFF;
     }
 
     private void op_2xxx_CALL(int instr) {
         if (stackPointer == 15) {
             lastError = new Chip8Error(
                     Chip8Error.Type.STACK_OVERFLOW,
-                    "Stack overflow error (CALL instruction)", instr, programCounter);
+                    "Stack overflow error (CALL instruction)", instr, PC);
             return;
         }
 
         stackPointer++;
-        stack[stackPointer] = programCounter;
-        programCounter = instr & 0x0FFF;
+        stack[stackPointer] = PC;
+        PC = instr & 0x0FFF;
     }
 
     private void op_3xxx_SE(int instr) {
@@ -221,7 +223,7 @@ public class Chip8Core {
         byte value = (byte) (instr & 0xFF);
 
         if (V[reg] == value) {
-            programCounter += 2;
+            PC += 2;
         }
     }
 
@@ -230,7 +232,7 @@ public class Chip8Core {
         byte value = (byte) (instr & 0xFF);
 
         if (V[reg] != value) {
-            programCounter += 2;
+            PC += 2;
         }
     }
 
@@ -238,7 +240,7 @@ public class Chip8Core {
         int reg1 = (instr >>> 8) & 0xF;
         int reg2 = (instr >>> 4) & 0xF;
         if (V[reg1] == V[reg2]) {
-            programCounter += 2;
+            PC += 2;
         }
     }
 
@@ -335,7 +337,7 @@ public class Chip8Core {
         int reg2 = (instr >>> 4) & 0xF;
 
         if (V[reg1] != V[reg2]) {
-            programCounter += 2;
+            PC += 2;
         }
     }
 
@@ -344,7 +346,7 @@ public class Chip8Core {
     }
 
     private void op_Bxxx_JP(int instr) {
-        programCounter = (instr & 0x0FFF) + (V[0] & 0xFF);
+        PC = (instr & 0x0FFF) + (V[0] & 0xFF);
     }
 
     private void op_Cxxx_RND(int instr) {
@@ -373,7 +375,7 @@ public class Chip8Core {
         int key = V[reg] & 0xFF;
 
         if (keyboard.isKeyPressed(key)) {
-            programCounter += 2;
+            PC += 2;
         }
     }
 
@@ -383,7 +385,7 @@ public class Chip8Core {
         int key = V[reg] & 0xFF;
 
         if (!keyboard.isKeyPressed(key)) {
-            programCounter += 2;
+            PC += 2;
         }
     }
 
@@ -395,7 +397,7 @@ public class Chip8Core {
     private void op_Fx0A_LD(int instr) {
         int reg = (instr >>> 8) & 0xF;
         if (!keyboard.isAnyKeyPressed()) {
-            programCounter -= 2; //repeat this instruction
+            PC -= 2; //repeat this instruction
         } else {
             for (byte key = 0; key < 16; key++) {
                 if (keyboard.isKeyPressed(key)) {
