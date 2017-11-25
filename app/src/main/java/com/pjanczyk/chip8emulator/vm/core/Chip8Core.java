@@ -1,4 +1,4 @@
-package com.pjanczyk.chip8emulator.vm.core;// Author: Piotr Janczyk, 24.03.16
+package com.pjanczyk.chip8emulator.vm.core;
 
 import android.util.Log;
 

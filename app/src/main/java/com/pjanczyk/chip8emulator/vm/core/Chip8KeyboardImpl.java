@@ -1,4 +1,4 @@
-package com.pjanczyk.chip8emulator.vm.core;// Author: Piotr Janczyk, 27.03.16
+package com.pjanczyk.chip8emulator.vm.core;
 
 import com.pjanczyk.chip8emulator.vm.Chip8Keyboard;
 

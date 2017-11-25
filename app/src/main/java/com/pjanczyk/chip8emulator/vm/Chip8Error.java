@@ -1,4 +1,4 @@
-package com.pjanczyk.chip8emulator.vm;// Author: Piotr Janczyk, 30.03.16
+package com.pjanczyk.chip8emulator.vm;
 
 public class Chip8Error {
 

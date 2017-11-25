@@ -1,4 +1,4 @@
-package com.pjanczyk.chip8emulator.model;// Author: Piotr Janczyk, 29.03.16
+package com.pjanczyk.chip8emulator.model;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;

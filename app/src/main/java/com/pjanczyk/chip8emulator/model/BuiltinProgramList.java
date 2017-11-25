@@ -1,4 +1,4 @@
-package com.pjanczyk.chip8emulator.model;// Author: Piotr Janczyk, 29.03.16
+package com.pjanczyk.chip8emulator.model;
 
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;

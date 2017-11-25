@@ -1,4 +1,4 @@
-package com.pjanczyk.chip8emulator.model;// Author: Piotr Janczyk, 27.03.16
+package com.pjanczyk.chip8emulator.model;
 
 import android.content.Context;
 import android.os.Parcelable;

@@ -1,4 +1,4 @@
-package com.pjanczyk.chip8emulator.ui.emulator;// Author: Piotr Janczyk, 26.03.16
+package com.pjanczyk.chip8emulator.ui.emulator;
 
 import android.opengl.GLSurfaceView;
 

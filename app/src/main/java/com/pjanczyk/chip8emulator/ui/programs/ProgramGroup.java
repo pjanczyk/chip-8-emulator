@@ -1,4 +1,4 @@
-package com.pjanczyk.chip8emulator.ui.programs;// Author: Piotr Janczyk, 28.03.16
+package com.pjanczyk.chip8emulator.ui.programs;
 
 import com.pjanczyk.chip8emulator.model.Program;
 

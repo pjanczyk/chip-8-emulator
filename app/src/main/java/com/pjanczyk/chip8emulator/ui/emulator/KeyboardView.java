@@ -1,4 +1,4 @@
-package com.pjanczyk.chip8emulator.ui.emulator;// Author: Piotr Janczyk, 27.03.16
+package com.pjanczyk.chip8emulator.ui.emulator;
 
 import android.content.Context;
 import android.util.AttributeSet;
