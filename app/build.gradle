@@ -27,6 +27,7 @@ dependencies {
     implementation 'com.google.guava:guava:23.5-android'
     implementation 'org.simpleframework:simple-xml:2.7.1'
     testImplementation 'junit:junit:4.12'
+    testImplementation "org.mockito:mockito-core:2.8.47"
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.1') {
         exclude group: 'com.google.code.findbugs'
