@@ -117,157 +117,71 @@ public class Chip8Core {
         display.clear();
     }
 
+    // @formatter:off
     boolean executeInstruction(int instr) {
         switch (instr & 0xF000) {
             case 0x0000:
-                if (instr == 0x00E0) {
-                    op_00E0_CLS(instr);
-                    return true;
-                } else if (instr == 0x00EE) {
-                    op_00EE_RET(instr);
-                    return true;
-                } else {
-                    return false;
+                switch (instr) {
+                    case 0x00E0: op_00E0_CLS(instr); return true;
+                    case 0x00EE: op_00EE_RET(instr); return true;
+                    default: return false;
                 }
-
-            case 0x1000:
-                op_1xxx_JP(instr);
-                return true;
-
-            case 0x2000:
-                op_2xxx_CALL(instr);
-                return true;
-
-            case 0x3000:
-                op_3xxx_SE(instr);
-                return true;
-
-            case 0x4000:
-                op_4xxx_SNE(instr);
-                return true;
-
+            case 0x1000: op_1xxx_JP(instr); return true;
+            case 0x2000: op_2xxx_CALL(instr); return true;
+            case 0x3000: op_3xxx_SE(instr); return true;
+            case 0x4000: op_4xxx_SNE(instr); return true;
             case 0x5000:
-                if ((instr & 0xF) == 0) {
-                    op_5xx0_SE(instr);
-                    return true;
-                } else {
-                    return false;
+                switch (instr & 0x000F) {
+                    case 0x0: op_5xx0_SE(instr); return true;
+                    default: return false;
                 }
-
-            case 0x6000:
-                op_6xxx_LD(instr);
-                return true;
-
-            case 0x7000:
-                op_7xxx_ADD(instr);
-                return true;
-
+            case 0x6000: op_6xxx_LD(instr); return true;
+            case 0x7000: op_7xxx_ADD(instr); return true;
             case 0x8000:
                 switch (instr & 0x000F) {
-                    case 0x0:
-                        op_8xx0_LD(instr);
-                        return true;
-                    case 0x1:
-                        op_8xx1_OR(instr);
-                        return true;
-                    case 0x2:
-                        op_8xx2_AND(instr);
-                        return true;
-                    case 0x3:
-                        op_8xx3_XOR(instr);
-                        return true;
-                    case 0x4:
-                        op_8xx4_ADD(instr);
-                        return true;
-                    case 0x5:
-                        op_8xx5_SUB(instr);
-                        return true;
-                    case 0x6:
-                        op_8xx6_SHR(instr);
-                        return true;
-                    case 0x7:
-                        op_8xx7_SUBN(instr);
-                        return true;
-                    case 0xE:
-                        op_8xxE_SHL(instr);
-                        return true;
-                    default:
-                        return false;
+                    case 0x0: op_8xx0_LD(instr); return true;
+                    case 0x1: op_8xx1_OR(instr); return true;
+                    case 0x2: op_8xx2_AND(instr); return true;
+                    case 0x3: op_8xx3_XOR(instr); return true;
+                    case 0x4: op_8xx4_ADD(instr); return true;
+                    case 0x5: op_8xx5_SUB(instr); return true;
+                    case 0x6: op_8xx6_SHR(instr); return true;
+                    case 0x7: op_8xx7_SUBN(instr); return true;
+                    case 0xE: op_8xxE_SHL(instr); return true;
+                    default: return false;
                 }
-
             case 0x9000:
-                if ((instr & 0xF) == 0) {
-                    op_9xx0_SNE(instr);
-                    return true;
-                } else {
-                    return false;
+                switch (instr & 0x000F) {
+                    case 0x0: op_9xx0_SNE(instr); return true;
+                    default: return false;
                 }
-
-            case 0xA000:
-                op_Axxx_LD(instr);
-                return true;
-
-            case 0xB000:
-                op_Bxxx_JP(instr);
-                return true;
-
-            case 0xC000:
-                op_Cxxx_RND(instr);
-                return true;
-
-            case 0xD000:
-                op_Dxxx_DRW(instr);
-                return true;
-
+            case 0xA000: op_Axxx_LD(instr); return true;
+            case 0xB000: op_Bxxx_JP(instr); return true;
+            case 0xC000: op_Cxxx_RND(instr); return true;
+            case 0xD000: op_Dxxx_DRW(instr); return true;
             case 0xE000:
-                switch (instr & 0xFF) {
-                    case 0x9E:
-                        op_Ex9E_SKP(instr);
-                        return true;
-                    case 0xA1:
-                        op_ExA1_SKNP(instr);
-                        return true;
-                    default:
-                        return false;
+                switch (instr & 0x00FF) {
+                    case 0x9E: op_Ex9E_SKP(instr); return true;
+                    case 0xA1: op_ExA1_SKNP(instr); return true;
+                    default: return false;
                 }
-
             case 0xF000:
-                switch (instr & 0xFF) {
-                    case 0x07:
-                        op_Fx07_LD(instr);
-                        return true;
-                    case 0x0A:
-                        op_Fx0A_LD(instr);
-                        return true;
-                    case 0x15:
-                        op_Fx15_LD(instr);
-                        return true;
-                    case 0x18:
-                        op_Fx18_ST(instr);
-                        return true;
-                    case 0x1E:
-                        op_Fx1E_ADD(instr);
-                        return true;
-                    case 0x29:
-                        op_Fx29_LD(instr);
-                        return true;
-                    case 0x33:
-                        op_Fx33_LD(instr);
-                        return true;
-                    case 0x55:
-                        op_Fx55_LD(instr);
-                        return true;
-                    case 0x65:
-                        op_Fx65_LD(instr);
-                        return true;
-                    default:
-                        return false;
+                switch (instr & 0x00FF) {
+                    case 0x07: op_Fx07_LD(instr); return true;
+                    case 0x0A: op_Fx0A_LD(instr); return true;
+                    case 0x15: op_Fx15_LD(instr); return true;
+                    case 0x18: op_Fx18_ST(instr); return true;
+                    case 0x1E: op_Fx1E_ADD(instr); return true;
+                    case 0x29: op_Fx29_LD(instr); return true;
+                    case 0x33: op_Fx33_LD(instr); return true;
+                    case 0x55: op_Fx55_LD(instr); return true;
+                    case 0x65: op_Fx65_LD(instr); return true;
+                    default: return false;
                 }
-
-            default:
-                return false;
+            default: return false;
         }
     }
+    // @formatter:on
 
     private void op_00E0_CLS(int instr) {
         display.clear();
