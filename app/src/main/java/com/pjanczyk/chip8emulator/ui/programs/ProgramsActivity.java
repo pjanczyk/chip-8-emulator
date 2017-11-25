@@ -6,7 +6,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 
 import com.pjanczyk.chip8emulator.R;
 import com.pjanczyk.chip8emulator.model.BuiltinProgramList;
@@ -28,31 +27,24 @@ public class ProgramsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_programs);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.list);
-
-        assert toolbar != null;
-        assert fab != null;
-        assert recyclerView != null;
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        FloatingActionButton fab = findViewById(R.id.fab);
+        RecyclerView recyclerView = findViewById(R.id.list);
 
         setSupportActionBar(toolbar);
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT, null);
-                intent.setType("file/*");
-                startActivityForResult(intent, GET_CONTENT_REQUEST_CODE);
-            }
+        fab.setOnClickListener(view -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT, null);
+            intent.setType("file/*");
+            startActivityForResult(intent, GET_CONTENT_REQUEST_CODE);
         });
 
-        List<Program> builtinPrograms = getBuiltinPrograms();
-
         List<ProgramGroup> groups = new ArrayList<>();
+        List<Program> builtinPrograms = getBuiltinPrograms();
         groups.add(new ProgramGroup("Built-in programs", builtinPrograms));
 
-        recyclerView.setAdapter(new ProgramsRecyclerViewAdapter(groups, this));
+        ProgramAdapter adapter = new ProgramAdapter(groups, this::onProgramClicked);
+        recyclerView.setAdapter(adapter);
     }
 
     @Override
@@ -63,9 +55,9 @@ public class ProgramsActivity extends AppCompatActivity {
         }
     }
 
-    public void onProgramSelected(Program pi) {
-        Intent intent = new Intent(ProgramsActivity.this, EmulatorActivity.class);
-        intent.putExtra(EmulatorActivity.EXTRA_PROGRAM, pi);
+    public void onProgramClicked(Program program) {
+        Intent intent = new Intent(this, EmulatorActivity.class);
+        intent.putExtra(EmulatorActivity.EXTRA_PROGRAM, program);
         startActivity(intent);
     }
 

@@ -12,22 +12,19 @@ import com.pjanczyk.chip8emulator.model.Program;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProgramsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class ProgramAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int VIEW_TYPE_SUBHEADER = 0;
     private static final int VIEW_TYPE_ITEM = 1;
 
-    private final List<ProgramGroup> groups;
-    private final ProgramsActivity activity;
-
     private final List<Object> items;
+    private final ItemClickListener itemClickListener;
 
-    public ProgramsRecyclerViewAdapter(List<ProgramGroup> groups, ProgramsActivity activity) {
-        this.groups = groups;
-        this.activity = activity;
+    public ProgramAdapter(List<ProgramGroup> groups,
+                          ItemClickListener itemClickListener) {
+        this.itemClickListener = itemClickListener;
 
         items = new ArrayList<>();
-
         for (ProgramGroup group : groups) {
             items.add(group);
             items.addAll(group.programs);
@@ -52,22 +49,16 @@ public class ProgramsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
         if (viewHolder instanceof SubheaderViewHolder) {
             SubheaderViewHolder holder = (SubheaderViewHolder) viewHolder;
             ProgramGroup item = (ProgramGroup) items.get(position);
-            holder.titleView.setText(item.name);
-
+            holder.textViewTitle.setText(item.name);
         } else {
-            final ItemViewHolder holder = (ItemViewHolder) viewHolder;
+            ItemViewHolder holder = (ItemViewHolder) viewHolder;
             Program item = (Program) items.get(position);
-            holder.item = item;
-            holder.nameView.setText(item.getName());
-            holder.detailsView.setText(item.getAuthor());
+            holder.textViewName.setText(item.getName());
+            holder.textViewDetails.setText(item.getAuthor());
 
-            holder.view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (null != activity) {
-                        activity.onProgramSelected(holder.item);
-                    }
-                }
+            holder.itemView.setOnClickListener(v -> {
+                Program program = (Program) items.get(holder.getAdapterPosition());
+                itemClickListener.onItemClicked(program);
             });
         }
     }
@@ -88,28 +79,27 @@ public class ProgramsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
         return items.size();
     }
 
-    public class SubheaderViewHolder extends RecyclerView.ViewHolder {
-        public final View view;
-        public final TextView titleView;
+    public interface ItemClickListener {
+        void onItemClicked(Program program);
+    }
+
+    private static class SubheaderViewHolder extends RecyclerView.ViewHolder {
+        public final TextView textViewTitle;
 
         public SubheaderViewHolder(View view) {
             super(view);
-            this.view = view;
-            titleView = (TextView) view.findViewById(R.id.text_subheader);
+            textViewTitle = view.findViewById(R.id.text_subheader);
         }
     }
 
-    public class ItemViewHolder extends RecyclerView.ViewHolder {
-        public final View view;
-        public final TextView nameView;
-        public final TextView detailsView;
-        public Program item;
+    private static class ItemViewHolder extends RecyclerView.ViewHolder {
+        public final TextView textViewName;
+        public final TextView textViewDetails;
 
         public ItemViewHolder(View view) {
             super(view);
-            this.view = view;
-            nameView = (TextView) view.findViewById(R.id.text_primary);
-            detailsView = (TextView) view.findViewById(R.id.text_secondary);
+            textViewName = view.findViewById(R.id.text_primary);
+            textViewDetails = view.findViewById(R.id.text_secondary);
         }
     }
 }
