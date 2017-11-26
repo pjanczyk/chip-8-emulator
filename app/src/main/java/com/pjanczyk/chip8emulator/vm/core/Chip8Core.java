@@ -185,6 +185,26 @@ public class Chip8Core {
     }
     // @formatter:on
 
+    private static int arg_nnn(int instr) {
+        return instr & 0x0FFF;
+    }
+
+    private static byte arg_nn(int instr) {
+        return (byte) (instr & 0x00FF);
+    }
+
+    private static int arg_n(int instr) {
+        return instr & 0x000F;
+    }
+
+    private static int arg_x(int instr) {
+        return (instr & 0x0F00) >>> 8;
+    }
+
+    private static int arg_y(int instr) {
+        return (instr & 0x00F0) >>> 4;
+    }
+
     private void op_00E0_CLS(int instr) {
         display.clear();
     }
@@ -201,7 +221,7 @@ public class Chip8Core {
     }
 
     private void op_1nnn_JP(int instr) {
-        PC = instr & 0x0FFF;
+        PC = arg_nnn(instr);
     }
 
     private void op_2nnn_CALL(int instr) {
@@ -213,154 +233,104 @@ public class Chip8Core {
         }
 
         stack.push(PC);
-        PC = instr & 0x0FFF;
+        PC = arg_nnn(instr);
     }
 
     private void op_3xnn_SE(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-        byte value = (byte) (instr & 0xFF);
-
-        if (V[reg] == value) {
+        if (V[arg_x(instr)] == arg_nn(instr)) {
             PC += 2;
         }
     }
 
     private void op_4xnn_SNE(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-        byte value = (byte) (instr & 0xFF);
-
-        if (V[reg] != value) {
+        if (V[arg_x(instr)] != arg_nn(instr)) {
             PC += 2;
         }
     }
 
     private void op_5xy0_SE(int instr) {
-        int reg1 = (instr >>> 8) & 0xF;
-        int reg2 = (instr >>> 4) & 0xF;
-        if (V[reg1] == V[reg2]) {
+        if (V[arg_x(instr)] == V[arg_y(instr)]) {
             PC += 2;
         }
     }
 
     private void op_6xnn_LD(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-        byte value = (byte) (instr & 0xFF);
-
-        V[reg] = value;
+        V[arg_x(instr)] = arg_nn(instr);
     }
 
     private void op_7xnn_ADD(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-        byte value = (byte) (instr & 0xFF);
-
-        V[reg] += value;
+        V[arg_x(instr)] += arg_nn(instr);
     }
 
     private void op_8xy0_LD(int instr) {
-        int reg1 = (instr >>> 8) & 0xF;
-        int reg2 = (instr >>> 4) & 0xF;
-
-        V[reg1] = V[reg2];
+        V[arg_x(instr)] = V[arg_y(instr)];
     }
 
     private void op_8xy1_OR(int instr) {
-        int reg1 = (instr >>> 8) & 0xF;
-        int reg2 = (instr >>> 4) & 0xF;
-
-        V[reg1] |= V[reg2];
+        V[arg_x(instr)] |= V[arg_y(instr)];
     }
 
     private void op_8xy2_AND(int instr) {
-        int reg1 = (instr >>> 8) & 0xF;
-        int reg2 = (instr >>> 4) & 0xF;
-
-        V[reg1] &= V[reg2];
+        V[arg_x(instr)] &= V[arg_y(instr)];
     }
 
     private void op_8xy3_XOR(int instr) {
-        int reg1 = (instr >>> 8) & 0xF;
-        int reg2 = (instr >>> 4) & 0xF;
-
-        V[reg1] ^= V[reg2];
+        V[arg_x(instr)] ^= V[arg_y(instr)];
     }
 
     private void op_8xy4_ADD(int instr) {
-        int reg1 = (instr >>> 8) & 0xF;
-        int reg2 = (instr >>> 4) & 0xF;
+        int sum = (V[arg_x(instr)] & 0xFF) + (V[arg_y(instr)] & 0xFF);
 
-        int sum = (V[reg1] & 0xFF) + (V[reg2] & 0xFF);
-
-        V[0xF] = (byte) (sum >>> 8); //carry flag - 0 or 1
-        V[reg1] = (byte) (sum & 0xFF);
+        V[0xF] = sum > 255 ? (byte) 1 : (byte) 0; // carry
+        V[arg_x(instr)] = (byte) (sum & 0xFF);
     }
 
     private void op_8xy5_SUB(int instr) {
-        int reg1 = (instr >>> 8) & 0xF;
-        int reg2 = (instr >>> 4) & 0xF;
+        int diff = (V[arg_x(instr)] & 0xFF) - (V[arg_y(instr)] & 0xFF);
 
-        int diff = (V[reg1] & 0xFF) - (V[reg2] & 0xFF);
-
-        V[0xF] = (byte) (diff < 0 ? 0 : 1); // not borrow
-        V[reg1] = (byte) (diff & 0xFF);
+        V[0xF] = diff > 0 ? (byte) 1 : (byte) 0; // not borrow
+        V[arg_x(instr)] = (byte) (diff & 0xFF);
     }
 
     private void op_8xy6_SHR(int instr) {
-        int reg1 = (instr >>> 8) & 0xF;
-        int reg2 = (instr >>> 4) & 0xF;
-
-        V[0xF] = (byte) (V[reg1] & 1);
-        V[reg1] = (byte) ((V[reg1] & 0xFF) >>> 1);
+        V[0xF] = (byte) (V[arg_x(instr)] & 1);
+        V[arg_x(instr)] >>>= 1;
     }
 
     private void op_8xy7_SUBN(int instr) {
-        int reg1 = (instr >>> 8) & 0xF;
-        int reg2 = (instr >>> 4) & 0xF;
+        int diff = (V[arg_y(instr)] & 0xFF) - (V[arg_x(instr)] & 0xFF);
 
-        int diff = (V[reg2] & 0xFF) - (V[reg1] & 0xFF);
-
-        V[0xF] = (byte) (diff < 0 ? 0 : 1); // not borrow
-        V[reg1] = (byte) (diff & 0xFF);
+        V[0xF] = diff > 0 ? (byte) 1 : (byte) 0; // not borrow
+        V[arg_x(instr)] = (byte) (diff & 0xFF);
     }
 
     private void op_8xyE_SHL(int instr) {
-        int reg1 = (instr >>> 8) & 0xF;
-        int reg2 = (instr >>> 4) & 0xF;
-
-        V[0xF] = (byte) (V[reg1] < 0 ? 1 : 0);
-        V[reg1] <<= 1;
+        V[0xF] = (byte) (V[arg_x(instr)] >>> 7);
+        V[arg_x(instr)] <<= 1;
     }
 
     private void op_9xy0_SNE(int instr) {
-        int reg1 = (instr >>> 8) & 0xF;
-        int reg2 = (instr >>> 4) & 0xF;
-
-        if (V[reg1] != V[reg2]) {
+        if (V[arg_x(instr)] != V[arg_y(instr)]) {
             PC += 2;
         }
     }
 
     private void op_Annn_LD(int instr) {
-        I = instr & 0x0FFF;
+        I = arg_nnn(instr);
     }
 
     private void op_Bnnn_JP(int instr) {
-        PC = (instr & 0x0FFF) + (V[0] & 0xFF);
+        PC = (arg_nnn(instr) + (V[0] & 0xFF)) & 0xFFF;
     }
 
     private void op_Cxnn_RND(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-        byte value = (byte) (instr & 0xFF);
-
-        V[reg] = (byte) (RANDOM_GENERATOR.nextInt() & value);
+        V[arg_x(instr)] = (byte) (RANDOM_GENERATOR.nextInt() & arg_nn(instr));
     }
 
     private void op_Dxyn_DRW(int instr) {
-        int reg1 = (instr >>> 8) & 0xF;
-        int reg2 = (instr >>> 4) & 0xF;
-        int length = instr & 0xF;
-
-        int x = V[reg1] & 0xFF;
-        int y = V[reg2] & 0xFF;
+        int x = V[arg_x(instr)] & 0xFF;
+        int y = V[arg_y(instr)] & 0xFF;
+        int length = arg_n(instr);
 
         boolean anyErased = display.drawSprite(x, y, memory, I, length);
 
@@ -368,67 +338,54 @@ public class Chip8Core {
     }
 
     private void op_Ex9E_SKP(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-
-        int key = V[reg] & 0xFF;
-
+        int key = V[arg_x(instr)] & 0xFF;
         if (keyboard.isKeyPressed(key)) {
             PC += 2;
         }
     }
 
     private void op_ExA1_SKNP(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-
-        int key = V[reg] & 0xFF;
-
+        int key = V[arg_x(instr)] & 0xFF;
         if (!keyboard.isKeyPressed(key)) {
             PC += 2;
         }
     }
 
     private void op_Fx07_LD(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-        V[reg] = delayTimer;
+        V[arg_x(instr)] = delayTimer;
     }
 
     private void op_Fx0A_LD(int instr) {
-        int reg = (instr >>> 8) & 0xF;
         if (!keyboard.isAnyKeyPressed()) {
             PC -= 2; //repeat this instruction
+            // TODO: *all* execution stops?
         } else {
             for (byte key = 0; key < 16; key++) {
                 if (keyboard.isKeyPressed(key)) {
-                    V[reg] = key;
+                    V[arg_x(instr)] = key;
                 }
             }
         }
     }
 
     private void op_Fx15_LD(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-        delayTimer = V[reg];
+        delayTimer = V[arg_x(instr)];
     }
 
     private void op_Fx18_ST(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-        soundTimer = V[reg];
+        soundTimer = V[arg_x(instr)];
     }
 
     private void op_Fx1E_ADD(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-        I += V[reg] & 0xFF;
-        I &= 0xFFF;
+        I = (I + V[arg_x(instr)] & 0xFF) & 0xFFF;
     }
 
     private void op_Fx29_LD(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-        I = (V[reg] & 0xFF) * 5;
+        I = 5 * (V[arg_x(instr)] & 0xFF);
     }
 
     private void op_Fx33_LD(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-        int number = V[reg] & 0xFF;
+        int number = V[arg_x(instr)] & 0xFF;
 
         memory[I] = (byte) (number / 100);
         memory[I + 1] = (byte) ((number / 10) % 10);
@@ -436,15 +393,11 @@ public class Chip8Core {
     }
 
     private void op_Fx55_LD(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-
-        System.arraycopy(V, 0, memory, I, reg + 1);
+        System.arraycopy(V, 0, memory, I, arg_x(instr) + 1);
     }
 
     private void op_Fx65_LD(int instr) {
-        int reg = (instr >>> 8) & 0xF;
-
-        System.arraycopy(memory, I, V, 0, reg + 1);
+        System.arraycopy(memory, I, V, 0, arg_x(instr) + 1);
     }
 
 }
