@@ -37,12 +37,6 @@ public class EmulatorActivity extends AppCompatActivity implements Chip8VM.Liste
     private AppBarLayout appBar;
     private Toolbar toolbar;
     private boolean visible;
-    private final Runnable hideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hide();
-        }
-    };
 
     private Chip8VM vm;
 
@@ -57,10 +51,10 @@ public class EmulatorActivity extends AppCompatActivity implements Chip8VM.Liste
         setContentView(R.layout.activity_emulator);
 
         visible = true;
-        appBar = (AppBarLayout) findViewById(R.id.appbar);
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        displayView = (DisplayView) findViewById(R.id.display);
-        keyboardView = (KeyboardView) findViewById(R.id.keyboard);
+        appBar = findViewById(R.id.appbar);
+        toolbar = findViewById(R.id.toolbar);
+        displayView = findViewById(R.id.display);
+        keyboardView = findViewById(R.id.keyboard);
 
         vm = new Chip8VM();
 
@@ -69,11 +63,8 @@ public class EmulatorActivity extends AppCompatActivity implements Chip8VM.Liste
         vm.start();
 
         displayView.setDisplay(vm.getDisplay());
-        displayView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggle();
-            }
+        displayView.setOnClickListener(view -> {
+            toggle();
         });
 
         double aspectRatio =
@@ -88,16 +79,13 @@ public class EmulatorActivity extends AppCompatActivity implements Chip8VM.Liste
         keyboardView.setLayoutParams(new LinearLayout.LayoutParams(keyboardSize, keyboardSize));
 
 
-        keyboardView.setKeyListener(new KeyboardView.KeyListener() {
-            @Override
-            public void onKeyStateChanged(int key, boolean pressed) {
-                vm.getKeyboard().setKeyPressed(key, pressed);
-            }
+        keyboardView.setKeyListener((key, pressed) -> {
+            vm.getKeyboard().setKeyPressed(key, pressed);
         });
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        setTitle(program.getName());
+        setTitle(program.getDisplayName());
 
     }
 
@@ -106,7 +94,7 @@ public class EmulatorActivity extends AppCompatActivity implements Chip8VM.Liste
         super.onPostCreate(savedInstanceState);
 
         show();
-        hideHandler.postDelayed(hideRunnable, 150);
+        hideHandler.postDelayed(this::hide, 150);
     }
 
     @Override
@@ -126,7 +114,7 @@ public class EmulatorActivity extends AppCompatActivity implements Chip8VM.Liste
     }
 
     private void toggle() {
-        hideHandler.removeCallbacks(hideRunnable);
+        hideHandler.removeCallbacks(this::hide);
         if (visible) {
             hide();
         } else {

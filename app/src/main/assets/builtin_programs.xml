@@ -1,21 +1,21 @@
-<builtinProgramsList>
+<builtInProgramsList>
     <program path="builtin_programs/15PUZZLE.ch8">
-        <name>15 Puzzle</name>
+        <title>15 Puzzle</title>
         <author>Roger Ivie</author>
-		<docs>Same than PUZZLE2. Wait for randomization... Instead of moving the item by pressing his associated key, move it UP DOWN LEFT RIGHT with respectively 2 8 4 6. Up and Down are inverted as the game uses the original CHIP8 keyboard.</docs>
+		<description>Same than PUZZLE2. Wait for randomization... Instead of moving the item by pressing his associated key, move it UP DOWN LEFT RIGHT with respectively 2 8 4 6. Up and Down are inverted as the game uses the original CHIP8 keyboard.</description>
     </program>
 
     <program path="builtin_programs/BLITZ.ch8">
-        <name>Blitz</name>
+        <title>Blitz</title>
         <author>David Winter</author>
-        <docs>This game is a BOMBER clone. You are in a plane, and you must destroy the towers of a town. Your plane is flying left to right, and goes down. Use 5 to drop a bomb. The game ends when you crash yourself on a tower...</docs>
+        <description>This game is a BOMBER clone. You are in a plane, and you must destroy the towers of a town. Your plane is flying left to right, and goes down. Use 5 to drop a bomb. The game ends when you crash yourself on a tower...</description>
     </program>
 
     <program path="builtin_programs/HIDDEN.ch8">
-        <name>Hidden</name>
+        <title>Hidden</title>
         <author>David Winter</author>
-        <year>1996</year>
-        <docs>
+        <releaseDate>1996</releaseDate>
+        <description>
 HIDDEN is a "memory" game. It is very simple to play.
 
 The rules are as follow: your goal is to find all the identical cards
@@ -38,7 +38,7 @@ The keys are:
 [8] : Move UP
 
 Enjoy !!!
-        </docs>
+        </description>
     </program>
 
     <!--<program path="builtin_programs/">
@@ -49,4 +49,4 @@ Enjoy !!!
     </program>-->
 
 
-</builtinProgramsList>
+</builtInProgramsList>

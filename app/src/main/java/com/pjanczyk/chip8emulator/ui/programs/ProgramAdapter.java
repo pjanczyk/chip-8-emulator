@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.pjanczyk.chip8emulator.R;
+import com.pjanczyk.chip8emulator.model.BuiltInProgram;
+import com.pjanczyk.chip8emulator.model.ExternalProgram;
 import com.pjanczyk.chip8emulator.model.Program;
 
 import java.util.ArrayList;
@@ -52,13 +54,27 @@ public class ProgramAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             holder.textViewTitle.setText(item.name);
         } else {
             ItemViewHolder holder = (ItemViewHolder) viewHolder;
-            Program item = (Program) items.get(position);
-            holder.textViewName.setText(item.getName());
-            holder.textViewDetails.setText(item.getAuthor());
+            Program program = (Program) items.get(position);
+
+            String name;
+            String details;
+
+            if (program instanceof BuiltInProgram) {
+                BuiltInProgram builtInProgram = (BuiltInProgram) program;
+                name = builtInProgram.getTitle();
+                details = builtInProgram.getAuthor();
+            } else {
+                ExternalProgram externalProgram = (ExternalProgram) program;
+                name = externalProgram.getUri().getLastPathSegment();
+                details = externalProgram.getUri().toString();
+            }
+
+            holder.textViewName.setText(name);
+            holder.textViewDetails.setText(details);
 
             holder.itemView.setOnClickListener(v -> {
-                Program program = (Program) items.get(holder.getAdapterPosition());
-                itemClickListener.onItemClicked(program);
+                Program p = (Program) items.get(holder.getAdapterPosition());
+                itemClickListener.onItemClicked(p);
             });
         }
     }

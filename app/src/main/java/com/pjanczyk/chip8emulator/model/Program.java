@@ -2,22 +2,21 @@ package com.pjanczyk.chip8emulator.model;
 
 import android.content.Context;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
+
+import com.google.common.io.ByteStreams;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public interface Program extends Parcelable {
+    String getDisplayName();
+    InputStream openFile(Context context) throws IOException;
 
-    String getName();
-
-    int getSize();
-
-    boolean isBuiltin();
-
-    String getDocs();
-
-    String getAuthor();
-
-    String getYear();
-
-    @NonNull
-    byte[] readBytecode(Context context);
+    default byte[] readBytecode(Context context) {
+        try (InputStream stream = openFile(context)) {
+            return ByteStreams.toByteArray(stream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
