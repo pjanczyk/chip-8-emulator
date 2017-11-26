@@ -2,7 +2,7 @@ package com.pjanczyk.chip8emulator.ui.emulator;
 
 import android.opengl.GLSurfaceView;
 
-import com.pjanczyk.chip8emulator.vm.Chip8Display;
+import com.pjanczyk.chip8emulator.vm.Chip8ReadOnlyDisplay;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -28,9 +28,9 @@ public class DisplayRenderer implements GLSurfaceView.Renderer {
 
     private float color[] = {0.9f, 0.9f, 0.9f, 1.0f};
 
-    private Chip8Display display;
+    private Chip8ReadOnlyDisplay display;
 
-    public void setDisplay(Chip8Display display) {
+    public void setDisplay(Chip8ReadOnlyDisplay display) {
         this.display = display;
     }
 

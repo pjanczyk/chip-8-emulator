@@ -1,7 +1,5 @@
 package com.pjanczyk.chip8emulator.vm;
 
-import com.pjanczyk.chip8emulator.vm.core.Chip8Core;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class Chip8VM {
 
     public interface Listener {
-        void onDisplayRedraw(Chip8Display display);
+        void onDisplayRedraw(Chip8ReadOnlyDisplay display);
 
         /**
          * Called when an error occurs during execution of bytecode
@@ -38,56 +36,21 @@ public class Chip8VM {
     private final Object listenerLock = new Object();
     private final Object stateLock = new Object();
 
-    private final Chip8Core core = new Chip8Core();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private final Chip8Core core;
 
-    private final Runnable handleInstruction = new Runnable() {
-        @Override
-        public void run() {
-            final Chip8Error error = core.executeNextInstruction();
-
-            if (error != null) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Chip8VM.this.stop();
-                        synchronized (listenerLock) {
-                            if (listener != null) {
-                                listener.onError(error);
-                            }
-                        }
-                    }
-                }).start();
-            }
-
-            synchronized (listenerLock) {
-                if (listener != null) {
-                    listener.onDisplayRedraw(core.getDisplay());
-                }
-            }
-        }
-    };
-    private final Runnable handleTimers = new Runnable() {
-        @Override
-        public void run() {
-            core.decreaseTimers();
-        }
-    };
-    private final Runnable handleDisplayRefresh = new Runnable() {
-        @Override
-        public void run() {
-
-        }
-    };
-
-    private int instructionClockPeriod = 16667; // 50'000 ns  -  20 Hz
-    private int timerClockPeriod = 16667; // 16'667 ns  -  60 Hz
-    private int displayRefreshPeriod = 16667; // 16'667 ns  -  60 Hz
+    private int instructionClockPeriod = 1_000_000_000 / 500; // 500 Hz
+    private int timerClockPeriod = 1_000_000_000 / 60; // 60 Hz
+    private int displayRefreshPeriod = 1_000_000_000 / 60; // 60 Hz
 
     private boolean isRunning;
     private Listener listener;
 
-    public Chip8Display getDisplay() {
+    public Chip8VM() {
+        core = new Chip8Core(new Chip8Display(), new Chip8Keyboard());
+    }
+
+    public Chip8ReadOnlyDisplay getDisplay() {
         return core.getDisplay();
     }
 
@@ -163,13 +126,13 @@ public class Chip8VM {
 
             isRunning = true;
 
-            scheduler.scheduleAtFixedRate(handleInstruction,
+            scheduler.scheduleAtFixedRate(this::onInstructionClockTick,
                     0, instructionClockPeriod, TimeUnit.NANOSECONDS);
 
-            scheduler.scheduleAtFixedRate(handleTimers,
+            scheduler.scheduleAtFixedRate(this::onTimerClockTick,
                     timerClockPeriod, timerClockPeriod, TimeUnit.NANOSECONDS);
 
-            scheduler.scheduleAtFixedRate(handleDisplayRefresh,
+            scheduler.scheduleAtFixedRate(this::onDisplayRefreshClockTick,
                     displayRefreshPeriod, displayRefreshPeriod, TimeUnit.NANOSECONDS);
         }
     }
@@ -200,5 +163,34 @@ public class Chip8VM {
         if (isRunning) {
             throw new IllegalStateException("VM must be stopped to perform this operation");
         }
+    }
+
+    private void onInstructionClockTick() {
+        final Chip8Error error = core.executeNextInstruction();
+
+        if (error != null) {
+            new Thread(() -> {
+                Chip8VM.this.stop();
+                synchronized (listenerLock) {
+                    if (listener != null) {
+                        listener.onError(error);
+                    }
+                }
+            }).start();
+        }
+
+        synchronized (listenerLock) {
+            if (listener != null) {
+                listener.onDisplayRedraw(core.getDisplay());
+            }
+        }
+    }
+
+    private void onTimerClockTick() {
+        core.decreaseTimers();
+    }
+
+    private void onDisplayRefreshClockTick() {
+
     }
 }

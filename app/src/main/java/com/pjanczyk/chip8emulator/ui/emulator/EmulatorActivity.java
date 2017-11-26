@@ -16,9 +16,9 @@ import android.widget.LinearLayout;
 
 import com.pjanczyk.chip8emulator.R;
 import com.pjanczyk.chip8emulator.model.Program;
-import com.pjanczyk.chip8emulator.vm.Chip8Display;
 import com.pjanczyk.chip8emulator.vm.Chip8Error;
 import com.pjanczyk.chip8emulator.vm.Chip8VM;
+import com.pjanczyk.chip8emulator.vm.Chip8ReadOnlyDisplay;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -151,7 +151,7 @@ public class EmulatorActivity extends AppCompatActivity implements Chip8VM.Liste
     }
 
     @Override
-    public void onDisplayRedraw(Chip8Display display) {
+    public void onDisplayRedraw(Chip8ReadOnlyDisplay display) {
         displayView.requestRender();
     }
 

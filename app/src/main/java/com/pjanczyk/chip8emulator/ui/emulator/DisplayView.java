@@ -4,10 +4,7 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
-import com.pjanczyk.chip8emulator.vm.Chip8Display;
-
-import java.util.Timer;
-import java.util.TimerTask;
+import com.pjanczyk.chip8emulator.vm.Chip8ReadOnlyDisplay;
 
 public class DisplayView extends GLSurfaceView {
 
@@ -34,7 +31,7 @@ public class DisplayView extends GLSurfaceView {
         this(context, null);
     }
 
-    public void setDisplay(Chip8Display display) {
+    public void setDisplay(Chip8ReadOnlyDisplay display) {
         renderer.setDisplay(display);
         requestRender();
     }

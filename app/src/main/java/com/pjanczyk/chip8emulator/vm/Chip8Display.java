@@ -1,29 +1,39 @@
 package com.pjanczyk.chip8emulator.vm;
 
-/**
- * Monochromatic virtual display (read-only)
- *
- * Its content can be read pixel-by-pixel.
- */
-public interface Chip8Display {
+import java.util.Arrays;
 
-    /**
-     * Returns the width of the screen in pixels
-     */
-    int getWidth();
+class Chip8Display implements Chip8ReadOnlyDisplay {
 
-    /**
-     * Returns the height of the screen in pixels
-     */
-    int getHeight();
+    private static final int DISPLAY_WIDTH = 64;
+    private static final int DISPLAY_HEIGHT = 32;
 
-    /**
-     * Returns a value of a single pixel.
-     *
-     * @param x x-coordinate of a pixel
-     * @param y y-coordinate of a pixel
-     * @return {@code true} if pixel is white
-     *         {@code false} if pixel is black
-     */
-    boolean getPixel(int x, int y);
+    private final boolean[] data = new boolean[DISPLAY_WIDTH * DISPLAY_HEIGHT];
+
+    public int getWidth() {
+        return DISPLAY_WIDTH;
+    }
+
+    public int getHeight() {
+        return DISPLAY_HEIGHT;
+    }
+
+    public boolean getPixel(int x, int y) {
+        if (x < 0 || x >= DISPLAY_WIDTH || y < 0 || y > DISPLAY_HEIGHT) {
+            throw new IllegalArgumentException();
+        }
+
+        return data[DISPLAY_WIDTH * y + x];
+    }
+
+    public void setPixel(int x, int y, boolean on) {
+        if (x < 0 || x >= DISPLAY_WIDTH || y < 0 || y > DISPLAY_HEIGHT) {
+            throw new IllegalArgumentException();
+        }
+
+        data[DISPLAY_WIDTH * y + x] = on;
+    }
+
+    public void clear() {
+        Arrays.fill(data, false);
+    }
 }

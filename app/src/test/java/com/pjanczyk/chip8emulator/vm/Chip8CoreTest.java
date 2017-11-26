@@ -1,25 +1,25 @@
-package com.pjanczyk.chip8emulator.vm.core;
-
-import com.pjanczyk.chip8emulator.vm.Chip8Error;
+package com.pjanczyk.chip8emulator.vm;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import static junit.framework.Assert.*;
-import static org.mockito.Mockito.*;
+import static junit.framework.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
 public class Chip8CoreTest {
 
     private static final int PC0 = 0x900;
 
     private Chip8Core chip;
-    private Chip8DisplayImpl display;
-    private Chip8KeyboardImpl keyboard;
+    private Chip8Display display;
+    private Chip8Keyboard keyboard;
 
     @Before
     public void setUp() throws Exception {
-        display = mock(Chip8DisplayImpl.class);
-        keyboard = mock(Chip8KeyboardImpl.class);
+        display = mock(Chip8Display.class);
+        keyboard = mock(Chip8Keyboard.class);
         chip = new Chip8Core(display, keyboard);
         chip.PC = PC0;
 

@@ -1,17 +1,13 @@
-package com.pjanczyk.chip8emulator.vm.core;
+package com.pjanczyk.chip8emulator.vm;
 
 import android.util.Log;
-
-import com.pjanczyk.chip8emulator.vm.Chip8Display;
-import com.pjanczyk.chip8emulator.vm.Chip8Error;
-import com.pjanczyk.chip8emulator.vm.Chip8Keyboard;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.Random;
 
-public class Chip8Core {
+class Chip8Core {
 
     private static final byte[] DEFAULT_SPRITES = {
             (byte) 0xF0, (byte) 0x90, (byte) 0x90, (byte) 0x90, (byte) 0xF0, //0
@@ -44,16 +40,12 @@ public class Chip8Core {
 
     // stack
     Deque<Integer> stack;
-    Chip8DisplayImpl display;
-    Chip8KeyboardImpl keyboard;
+    Chip8Display display;
+    Chip8Keyboard keyboard;
 
     Chip8Error lastError = null;
 
-    public Chip8Core() {
-        this(new Chip8DisplayImpl(), new Chip8KeyboardImpl());
-    }
-
-    Chip8Core(Chip8DisplayImpl display, Chip8KeyboardImpl keyboard) {
+    Chip8Core(Chip8Display display, Chip8Keyboard keyboard) {
         this.display = display;
         this.keyboard = keyboard;
         loadDefaults();
@@ -112,8 +104,9 @@ public class Chip8Core {
         soundTimer = 0;
         stack = new ArrayDeque<>(24);
 
+        Arrays.fill(memory, (byte) 0);
         System.arraycopy(DEFAULT_SPRITES, 0, memory, 0, DEFAULT_SPRITES.length);
-        Arrays.fill(memory, 0x200, 0x1000, (byte) 0);
+
         PC = 0x200;
 
         display.clear();
@@ -328,11 +321,32 @@ public class Chip8Core {
     }
 
     private void op_Dxyn_DRW(int instr) {
-        int x = V[arg_x(instr)] & 0xFF;
-        int y = V[arg_y(instr)] & 0xFF;
+        int startX = V[arg_x(instr)] & 0xFF;
+        int startY = V[arg_y(instr)] & 0xFF;
         int length = arg_n(instr);
 
-        boolean anyErased = display.drawSprite(x, y, memory, I, length);
+        boolean anyErased = false;
+
+        for (int i = 0; i < length; i++) {
+            byte b = memory[I + i];
+
+            for (int j = 0; j < 8; j++) {
+                boolean bit = (b & (1 << (7 - j))) != 0;
+
+                if (bit) {
+                    int x = (startX + j) % display.getWidth();
+                    int y = (startY + i) % display.getHeight();
+
+                    boolean oldValue = display.getPixel(x, y);
+
+                    if (oldValue) {
+                        anyErased = true;
+                    }
+
+                    display.setPixel(x, y, !oldValue);
+                }
+            }
+        }
 
         V[0xF] = anyErased ? (byte) 1 : (byte) 0;
     }
