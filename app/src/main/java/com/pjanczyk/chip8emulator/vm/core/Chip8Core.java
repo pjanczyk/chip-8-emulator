@@ -128,39 +128,39 @@ public class Chip8Core {
                     case 0x00EE: op_00EE_RET(instr); return true;
                     default: return false;
                 }
-            case 0x1000: op_1xxx_JP(instr); return true;
-            case 0x2000: op_2xxx_CALL(instr); return true;
-            case 0x3000: op_3xxx_SE(instr); return true;
-            case 0x4000: op_4xxx_SNE(instr); return true;
+            case 0x1000: op_1nnn_JP(instr); return true;
+            case 0x2000: op_2nnn_CALL(instr); return true;
+            case 0x3000: op_3xnn_SE(instr); return true;
+            case 0x4000: op_4xnn_SNE(instr); return true;
             case 0x5000:
                 switch (instr & 0x000F) {
-                    case 0x0: op_5xx0_SE(instr); return true;
+                    case 0x0: op_5xy0_SE(instr); return true;
                     default: return false;
                 }
-            case 0x6000: op_6xxx_LD(instr); return true;
-            case 0x7000: op_7xxx_ADD(instr); return true;
+            case 0x6000: op_6xnn_LD(instr); return true;
+            case 0x7000: op_7xnn_ADD(instr); return true;
             case 0x8000:
                 switch (instr & 0x000F) {
-                    case 0x0: op_8xx0_LD(instr); return true;
-                    case 0x1: op_8xx1_OR(instr); return true;
-                    case 0x2: op_8xx2_AND(instr); return true;
-                    case 0x3: op_8xx3_XOR(instr); return true;
-                    case 0x4: op_8xx4_ADD(instr); return true;
-                    case 0x5: op_8xx5_SUB(instr); return true;
-                    case 0x6: op_8xx6_SHR(instr); return true;
-                    case 0x7: op_8xx7_SUBN(instr); return true;
-                    case 0xE: op_8xxE_SHL(instr); return true;
+                    case 0x0: op_8xy0_LD(instr); return true;
+                    case 0x1: op_8xy1_OR(instr); return true;
+                    case 0x2: op_8xy2_AND(instr); return true;
+                    case 0x3: op_8xy3_XOR(instr); return true;
+                    case 0x4: op_8xy4_ADD(instr); return true;
+                    case 0x5: op_8xy5_SUB(instr); return true;
+                    case 0x6: op_8xy6_SHR(instr); return true;
+                    case 0x7: op_8xy7_SUBN(instr); return true;
+                    case 0xE: op_8xyE_SHL(instr); return true;
                     default: return false;
                 }
             case 0x9000:
                 switch (instr & 0x000F) {
-                    case 0x0: op_9xx0_SNE(instr); return true;
+                    case 0x0: op_9xy0_SNE(instr); return true;
                     default: return false;
                 }
-            case 0xA000: op_Axxx_LD(instr); return true;
-            case 0xB000: op_Bxxx_JP(instr); return true;
-            case 0xC000: op_Cxxx_RND(instr); return true;
-            case 0xD000: op_Dxxx_DRW(instr); return true;
+            case 0xA000: op_Annn_LD(instr); return true;
+            case 0xB000: op_Bnnn_JP(instr); return true;
+            case 0xC000: op_Cxnn_RND(instr); return true;
+            case 0xD000: op_Dxyn_DRW(instr); return true;
             case 0xE000:
                 switch (instr & 0x00FF) {
                     case 0x9E: op_Ex9E_SKP(instr); return true;
@@ -200,11 +200,11 @@ public class Chip8Core {
         PC = stack.pop();
     }
 
-    private void op_1xxx_JP(int instr) {
+    private void op_1nnn_JP(int instr) {
         PC = instr & 0x0FFF;
     }
 
-    private void op_2xxx_CALL(int instr) {
+    private void op_2nnn_CALL(int instr) {
         if (stack.size() == 24) {
             lastError = new Chip8Error(
                     Chip8Error.Type.STACK_OVERFLOW,
@@ -216,7 +216,7 @@ public class Chip8Core {
         PC = instr & 0x0FFF;
     }
 
-    private void op_3xxx_SE(int instr) {
+    private void op_3xnn_SE(int instr) {
         int reg = (instr >>> 8) & 0xF;
         byte value = (byte) (instr & 0xFF);
 
@@ -225,7 +225,7 @@ public class Chip8Core {
         }
     }
 
-    private void op_4xxx_SNE(int instr) {
+    private void op_4xnn_SNE(int instr) {
         int reg = (instr >>> 8) & 0xF;
         byte value = (byte) (instr & 0xFF);
 
@@ -234,7 +234,7 @@ public class Chip8Core {
         }
     }
 
-    private void op_5xx0_SE(int instr) {
+    private void op_5xy0_SE(int instr) {
         int reg1 = (instr >>> 8) & 0xF;
         int reg2 = (instr >>> 4) & 0xF;
         if (V[reg1] == V[reg2]) {
@@ -242,49 +242,49 @@ public class Chip8Core {
         }
     }
 
-    private void op_6xxx_LD(int instr) {
+    private void op_6xnn_LD(int instr) {
         int reg = (instr >>> 8) & 0xF;
         byte value = (byte) (instr & 0xFF);
 
         V[reg] = value;
     }
 
-    private void op_7xxx_ADD(int instr) {
+    private void op_7xnn_ADD(int instr) {
         int reg = (instr >>> 8) & 0xF;
         byte value = (byte) (instr & 0xFF);
 
         V[reg] += value;
     }
 
-    private void op_8xx0_LD(int instr) {
+    private void op_8xy0_LD(int instr) {
         int reg1 = (instr >>> 8) & 0xF;
         int reg2 = (instr >>> 4) & 0xF;
 
         V[reg1] = V[reg2];
     }
 
-    private void op_8xx1_OR(int instr) {
+    private void op_8xy1_OR(int instr) {
         int reg1 = (instr >>> 8) & 0xF;
         int reg2 = (instr >>> 4) & 0xF;
 
         V[reg1] |= V[reg2];
     }
 
-    private void op_8xx2_AND(int instr) {
+    private void op_8xy2_AND(int instr) {
         int reg1 = (instr >>> 8) & 0xF;
         int reg2 = (instr >>> 4) & 0xF;
 
         V[reg1] &= V[reg2];
     }
 
-    private void op_8xx3_XOR(int instr) {
+    private void op_8xy3_XOR(int instr) {
         int reg1 = (instr >>> 8) & 0xF;
         int reg2 = (instr >>> 4) & 0xF;
 
         V[reg1] ^= V[reg2];
     }
 
-    private void op_8xx4_ADD(int instr) {
+    private void op_8xy4_ADD(int instr) {
         int reg1 = (instr >>> 8) & 0xF;
         int reg2 = (instr >>> 4) & 0xF;
 
@@ -294,7 +294,7 @@ public class Chip8Core {
         V[reg1] = (byte) (sum & 0xFF);
     }
 
-    private void op_8xx5_SUB(int instr) {
+    private void op_8xy5_SUB(int instr) {
         int reg1 = (instr >>> 8) & 0xF;
         int reg2 = (instr >>> 4) & 0xF;
 
@@ -304,7 +304,7 @@ public class Chip8Core {
         V[reg1] = (byte) (diff & 0xFF);
     }
 
-    private void op_8xx6_SHR(int instr) {
+    private void op_8xy6_SHR(int instr) {
         int reg1 = (instr >>> 8) & 0xF;
         int reg2 = (instr >>> 4) & 0xF;
 
@@ -312,7 +312,7 @@ public class Chip8Core {
         V[reg1] = (byte) ((V[reg1] & 0xFF) >>> 1);
     }
 
-    private void op_8xx7_SUBN(int instr) {
+    private void op_8xy7_SUBN(int instr) {
         int reg1 = (instr >>> 8) & 0xF;
         int reg2 = (instr >>> 4) & 0xF;
 
@@ -322,7 +322,7 @@ public class Chip8Core {
         V[reg1] = (byte) (diff & 0xFF);
     }
 
-    private void op_8xxE_SHL(int instr) {
+    private void op_8xyE_SHL(int instr) {
         int reg1 = (instr >>> 8) & 0xF;
         int reg2 = (instr >>> 4) & 0xF;
 
@@ -330,7 +330,7 @@ public class Chip8Core {
         V[reg1] <<= 1;
     }
 
-    private void op_9xx0_SNE(int instr) {
+    private void op_9xy0_SNE(int instr) {
         int reg1 = (instr >>> 8) & 0xF;
         int reg2 = (instr >>> 4) & 0xF;
 
@@ -339,22 +339,22 @@ public class Chip8Core {
         }
     }
 
-    private void op_Axxx_LD(int instr) {
+    private void op_Annn_LD(int instr) {
         I = instr & 0x0FFF;
     }
 
-    private void op_Bxxx_JP(int instr) {
+    private void op_Bnnn_JP(int instr) {
         PC = (instr & 0x0FFF) + (V[0] & 0xFF);
     }
 
-    private void op_Cxxx_RND(int instr) {
+    private void op_Cxnn_RND(int instr) {
         int reg = (instr >>> 8) & 0xF;
         byte value = (byte) (instr & 0xFF);
 
         V[reg] = (byte) (RANDOM_GENERATOR.nextInt() & value);
     }
 
-    private void op_Dxxx_DRW(int instr) {
+    private void op_Dxyn_DRW(int instr) {
         int reg1 = (instr >>> 8) & 0xF;
         int reg2 = (instr >>> 4) & 0xF;
         int length = instr & 0xF;
