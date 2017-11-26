@@ -6,7 +6,9 @@ import com.pjanczyk.chip8emulator.vm.Chip8Display;
 import com.pjanczyk.chip8emulator.vm.Chip8Error;
 import com.pjanczyk.chip8emulator.vm.Chip8Keyboard;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.Random;
 
 public class Chip8Core {
@@ -37,17 +39,15 @@ public class Chip8Core {
     byte delayTimer;
     byte soundTimer;
 
-    int stackPointer;
-
     // memory
     byte[] memory = new byte[4096];
 
     // stack
-    int[] stack = new int[16];
+    Deque<Integer> stack;
     Chip8DisplayImpl display;
     Chip8KeyboardImpl keyboard;
 
-    private Chip8Error lastError = null;
+    Chip8Error lastError = null;
 
     public Chip8Core() {
         this(new Chip8DisplayImpl(), new Chip8KeyboardImpl());
@@ -110,7 +110,7 @@ public class Chip8Core {
         I = 0;
         delayTimer = 0;
         soundTimer = 0;
-        stackPointer = 0;
+        stack = new ArrayDeque<>(24);
 
         System.arraycopy(DEFAULT_SPRITES, 0, memory, 0, DEFAULT_SPRITES.length);
         Arrays.fill(memory, 0x200, 0x1000, (byte) 0);
@@ -190,15 +190,14 @@ public class Chip8Core {
     }
 
     private void op_00EE_RET(int instr) {
-        if (stackPointer == 0) {
+        if (stack.isEmpty()) {
             lastError = new Chip8Error(
                     Chip8Error.Type.STACK_UNDERFLOW,
                     "Stack underflow error (RET instruction)", instr, PC);
             return;
         }
 
-        PC = stack[stackPointer];
-        stackPointer--;
+        PC = stack.pop();
     }
 
     private void op_1xxx_JP(int instr) {
@@ -206,15 +205,14 @@ public class Chip8Core {
     }
 
     private void op_2xxx_CALL(int instr) {
-        if (stackPointer == 15) {
+        if (stack.size() == 24) {
             lastError = new Chip8Error(
                     Chip8Error.Type.STACK_OVERFLOW,
                     "Stack overflow error (CALL instruction)", instr, PC);
             return;
         }
 
-        stackPointer++;
-        stack[stackPointer] = PC;
+        stack.push(PC);
         PC = instr & 0x0FFF;
     }
 
