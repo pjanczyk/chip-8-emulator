@@ -14,20 +14,19 @@ public class Chip8VM {
 
     private static final String TAG = "Chip8VM";
 
-    private final Object stateLock = new Object();
-    private final Object listenerLock = new Object();
+    private final Object isRunningLock = new Object();
 
     private final ScheduledExecutorService scheduler;
     private final Chip8Core core;
 
-    private int instructionClockPeriod = DEFAULT_INSTRUCTION_CLOCK_INTERVAL;
-    private int timerClockPeriod = DEFAULT_TIMER_CLOCK_INTERVAL;
+    private volatile Listener listener;
+    private volatile boolean isRunning;
 
-    private boolean isRunning;
-    private Listener listener;
+    private volatile int instructionClockPeriod = DEFAULT_INSTRUCTION_CLOCK_INTERVAL;
+    private volatile int timerClockPeriod = DEFAULT_TIMER_CLOCK_INTERVAL;
 
-    private ScheduledFuture instructionClockFuture;
-    private ScheduledFuture timerClockFuture;
+    private volatile ScheduledFuture instructionClockFuture;
+    private volatile ScheduledFuture timerClockFuture;
 
     public Chip8VM() {
         scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -47,13 +46,11 @@ public class Chip8VM {
     }
 
     public void setListener(Listener listener) {
-        synchronized (listenerLock) {
-            this.listener = listener;
-        }
+        this.listener = listener;
     }
 
     public void setClockPeriods(int instructionClockPeriod, int timerClockPeriod) {
-        synchronized (stateLock) {
+        synchronized (isRunningLock) {
             assertStopped();
             this.instructionClockPeriod = instructionClockPeriod;
             this.timerClockPeriod = timerClockPeriod;
@@ -61,21 +58,21 @@ public class Chip8VM {
     }
 
     public void clearMemory() {
-        synchronized (stateLock) {
+        synchronized (isRunningLock) {
             assertStopped();
             core.loadDefaults();
         }
     }
 
     public void loadProgram(byte[] bytecode) {
-        synchronized (stateLock) {
+        synchronized (isRunningLock) {
             assertStopped();
             core.loadProgram(bytecode);
         }
     }
 
     public void start() {
-        synchronized (stateLock) {
+        synchronized (isRunningLock) {
             assertStopped();
             isRunning = true;
 
@@ -88,7 +85,7 @@ public class Chip8VM {
     }
 
     public void stop() {
-        synchronized (stateLock) {
+        synchronized (isRunningLock) {
             if (isRunning) {
                 isRunning = false;
 
@@ -104,12 +101,6 @@ public class Chip8VM {
         }
     }
 
-    private void assertStopped() {
-        if (isRunning) {
-            throw new IllegalStateException("VM is running");
-        }
-    }
-
     private void onInstructionClockTick() {
         final Chip8Error error = core.executeNextInstruction();
 
@@ -118,23 +109,29 @@ public class Chip8VM {
 
             new Thread(() -> {
                 Chip8VM.this.stop();
-                synchronized (listenerLock) {
-                    if (listener != null) {
-                        listener.onError(error);
-                    }
+                Listener listener = this.listener;
+                if (listener != null) {
+                    listener.onError(error);
                 }
             }).start();
-        } else {
-            synchronized (listenerLock) {
-                if (listener != null) {
-                    listener.onDisplayRedraw(getDisplay());
-                }
-            }
+
+            return;
+        }
+
+        Listener listener = this.listener;
+        if (listener != null) {
+            listener.onDisplayRedraw(getDisplay());
         }
     }
 
     private void onTimerClockTick() {
         core.decreaseTimers();
+    }
+
+    private void assertStopped() {
+        if (isRunning) {
+            throw new IllegalStateException("VM is running");
+        }
     }
 
     public interface Listener {
