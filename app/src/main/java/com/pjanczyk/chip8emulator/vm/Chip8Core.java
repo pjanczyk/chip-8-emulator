@@ -9,34 +9,33 @@ import java.util.Random;
 
 class Chip8Core {
 
-    private static final byte[] DEFAULT_SPRITES = {
-            (byte) 0xF0, (byte) 0x90, (byte) 0x90, (byte) 0x90, (byte) 0xF0, //0
-            (byte) 0x20, (byte) 0x60, (byte) 0x20, (byte) 0x20, (byte) 0x70, //1
-            (byte) 0xF0, (byte) 0x10, (byte) 0xF0, (byte) 0x80, (byte) 0xF0, //2
-            (byte) 0xF0, (byte) 0x10, (byte) 0xF0, (byte) 0x10, (byte) 0xF0, //3
-            (byte) 0x90, (byte) 0x90, (byte) 0xF0, (byte) 0x10, (byte) 0x10, //4
-            (byte) 0xF0, (byte) 0x80, (byte) 0xF0, (byte) 0x10, (byte) 0xF0, //5
-            (byte) 0xF0, (byte) 0x80, (byte) 0xF0, (byte) 0x90, (byte) 0xF0, //6
-            (byte) 0xF0, (byte) 0x10, (byte) 0x20, (byte) 0x40, (byte) 0x40, //7
-            (byte) 0xF0, (byte) 0x90, (byte) 0xF0, (byte) 0x90, (byte) 0xF0, //8
-            (byte) 0xF0, (byte) 0x90, (byte) 0xF0, (byte) 0x10, (byte) 0xF0, //9
-            (byte) 0xF0, (byte) 0x90, (byte) 0xF0, (byte) 0x90, (byte) 0x90, //A
-            (byte) 0xE0, (byte) 0x90, (byte) 0xE0, (byte) 0x90, (byte) 0xE0, //B
-            (byte) 0xF0, (byte) 0x80, (byte) 0x80, (byte) 0x80, (byte) 0xF0, //C
-            (byte) 0xE0, (byte) 0x90, (byte) 0x90, (byte) 0x90, (byte) 0xE0, //D
-            (byte) 0xF0, (byte) 0x80, (byte) 0xF0, (byte) 0x80, (byte) 0xF0, //E
-            (byte) 0xF0, (byte) 0x80, (byte) 0xF0, (byte) 0x80, (byte) 0x80  //F
+    private static final int[] DEFAULT_SPRITES = {
+            0xF0, 0x90, 0x90, 0x90, 0xF0, //0
+            0x20, 0x60, 0x20, 0x20, 0x70, //1
+            0xF0, 0x10, 0xF0, 0x80, 0xF0, //2
+            0xF0, 0x10, 0xF0, 0x10, 0xF0, //3
+            0x90, 0x90, 0xF0, 0x10, 0x10, //4
+            0xF0, 0x80, 0xF0, 0x10, 0xF0, //5
+            0xF0, 0x80, 0xF0, 0x90, 0xF0, //6
+            0xF0, 0x10, 0x20, 0x40, 0x40, //7
+            0xF0, 0x90, 0xF0, 0x90, 0xF0, //8
+            0xF0, 0x90, 0xF0, 0x10, 0xF0, //9
+            0xF0, 0x90, 0xF0, 0x90, 0x90, //A
+            0xE0, 0x90, 0xE0, 0x90, 0xE0, //B
+            0xF0, 0x80, 0x80, 0x80, 0xF0, //C
+            0xE0, 0x90, 0x90, 0x90, 0xE0, //D
+            0xF0, 0x80, 0xF0, 0x80, 0xF0, //E
+            0xF0, 0x80, 0xF0, 0x80, 0x80  //F
     };
     private static final Random RANDOM_GENERATOR = new Random();
 
-    int PC = 0; // program counter
-    byte[] V = new byte[16]; // registers
-    int I;
-    byte delayTimer;
-    byte soundTimer;
+    int PC = 0; // 24-bit program counter
+    int[] V = new int[16]; // 8-bit registers
+    int I; // 24-bit register
+    int[] memory = new int[4096]; // 8-bit memory
 
-    // memory
-    byte[] memory = new byte[4096];
+    int delayTimer;
+    int soundTimer;
 
     // stack
     Deque<Integer> stack;
@@ -60,11 +59,13 @@ class Chip8Core {
     }
 
     public void loadProgram(byte[] program) {
-        if (program.length > 3584) {
+        if (program.length > 4096 - 512) {
             throw new IllegalArgumentException("Program cannot longer than 3584 bytes");
         }
 
-        System.arraycopy(program, 0, memory, 512, program.length);
+        for (int i = 0; i < program.length; i++) {
+            memory[512 + i] = program[i];
+        }
     }
 
     public void decreaseTimers() {
@@ -77,8 +78,8 @@ class Chip8Core {
     }
 
     public Chip8Error executeNextInstruction() {
-        int instruction = ((memory[PC] & 0xFF) << 8) | (memory[PC + 1] & 0xFF);
-        Log.d("C8-VM", "Line " + ((PC - 0x200) / 2) + ", instr :" + Integer.toHexString(instruction));
+        int instruction = (memory[PC] << 8) | memory[PC + 1];
+        Log.d("C8-VM", "Line " + ((PC - 512) / 2) + ", instr :" + Integer.toHexString(instruction));
         PC += 2;
 
         if (!executeInstruction(instruction)) {
@@ -98,13 +99,13 @@ class Chip8Core {
     }
 
     public void loadDefaults() {
-        Arrays.fill(V, (byte) 0);
+        Arrays.fill(V, 0);
         I = 0;
         delayTimer = 0;
         soundTimer = 0;
         stack = new ArrayDeque<>(24);
 
-        Arrays.fill(memory, (byte) 0);
+        Arrays.fill(memory, 0);
         System.arraycopy(DEFAULT_SPRITES, 0, memory, 0, DEFAULT_SPRITES.length);
 
         PC = 0x200;
@@ -182,8 +183,8 @@ class Chip8Core {
         return instr & 0x0FFF;
     }
 
-    private static byte arg_nn(int instr) {
-        return (byte) (instr & 0x00FF);
+    private static int arg_nn(int instr) {
+        return instr & 0x00FF;
     }
 
     private static int arg_n(int instr) {
@@ -252,7 +253,7 @@ class Chip8Core {
     }
 
     private void op_7xnn_ADD(int instr) {
-        V[arg_x(instr)] += arg_nn(instr);
+        V[arg_x(instr)] = (arg_nn(instr) + V[arg_x(instr)]) & 0xFF;
     }
 
     private void op_8xy0_LD(int instr) {
@@ -272,34 +273,34 @@ class Chip8Core {
     }
 
     private void op_8xy4_ADD(int instr) {
-        int sum = (V[arg_x(instr)] & 0xFF) + (V[arg_y(instr)] & 0xFF);
+        int sum = V[arg_x(instr)] + V[arg_y(instr)];
 
-        V[0xF] = sum > 255 ? (byte) 1 : (byte) 0; // carry
-        V[arg_x(instr)] = (byte) (sum & 0xFF);
+        V[0xF] = sum > 255 ? 1 : 0; // carry
+        V[arg_x(instr)] = sum & 0xFF;
     }
 
     private void op_8xy5_SUB(int instr) {
-        int diff = (V[arg_x(instr)] & 0xFF) - (V[arg_y(instr)] & 0xFF);
+        int diff = V[arg_x(instr)] - V[arg_y(instr)];
 
-        V[0xF] = diff > 0 ? (byte) 1 : (byte) 0; // not borrow
-        V[arg_x(instr)] = (byte) (diff & 0xFF);
+        V[0xF] = diff > 0 ? 1 : 0; // not borrow
+        V[arg_x(instr)] = diff & 0xFF;
     }
 
     private void op_8xy6_SHR(int instr) {
-        V[0xF] = (byte) (V[arg_x(instr)] & 1);
+        V[0xF] = V[arg_x(instr)] & 1;
         V[arg_x(instr)] >>>= 1;
     }
 
     private void op_8xy7_SUBN(int instr) {
-        int diff = (V[arg_y(instr)] & 0xFF) - (V[arg_x(instr)] & 0xFF);
+        int diff = V[arg_y(instr)] - V[arg_x(instr)];
 
-        V[0xF] = diff > 0 ? (byte) 1 : (byte) 0; // not borrow
-        V[arg_x(instr)] = (byte) (diff & 0xFF);
+        V[0xF] = diff > 0 ? 1 : 0; // not borrow
+        V[arg_x(instr)] = diff & 0xFF;
     }
 
     private void op_8xyE_SHL(int instr) {
-        V[0xF] = (byte) (V[arg_x(instr)] >>> 7);
-        V[arg_x(instr)] <<= 1;
+        V[0xF] = V[arg_x(instr)] >>> 7;
+        V[arg_x(instr)] = (V[arg_x(instr)] << 1) & 0xFF;
     }
 
     private void op_9xy0_SNE(int instr) {
@@ -313,22 +314,22 @@ class Chip8Core {
     }
 
     private void op_Bnnn_JP(int instr) {
-        PC = (arg_nnn(instr) + (V[0] & 0xFF)) & 0xFFF;
+        PC = (arg_nnn(instr) + V[0]) & 0xFFF;
     }
 
     private void op_Cxnn_RND(int instr) {
-        V[arg_x(instr)] = (byte) (RANDOM_GENERATOR.nextInt() & arg_nn(instr));
+        V[arg_x(instr)] = RANDOM_GENERATOR.nextInt() & arg_nn(instr);
     }
 
     private void op_Dxyn_DRW(int instr) {
-        int startX = V[arg_x(instr)] & 0xFF;
-        int startY = V[arg_y(instr)] & 0xFF;
+        int startX = V[arg_x(instr)];
+        int startY = V[arg_y(instr)];
         int length = arg_n(instr);
 
         boolean anyErased = false;
 
         for (int i = 0; i < length; i++) {
-            byte b = memory[I + i];
+            int b = memory[I + i];
 
             for (int j = 0; j < 8; j++) {
                 boolean bit = (b & (1 << (7 - j))) != 0;
@@ -348,18 +349,18 @@ class Chip8Core {
             }
         }
 
-        V[0xF] = anyErased ? (byte) 1 : (byte) 0;
+        V[0xF] = anyErased ? 1 : 0;
     }
 
     private void op_Ex9E_SKP(int instr) {
-        int key = V[arg_x(instr)] & 0xFF;
+        int key = V[arg_x(instr)];
         if (keyboard.isKeyPressed(key)) {
             PC += 2;
         }
     }
 
     private void op_ExA1_SKNP(int instr) {
-        int key = V[arg_x(instr)] & 0xFF;
+        int key = V[arg_x(instr)];
         if (!keyboard.isKeyPressed(key)) {
             PC += 2;
         }
@@ -374,7 +375,7 @@ class Chip8Core {
             PC -= 2; //repeat this instruction
             // TODO: *all* execution stops?
         } else {
-            for (byte key = 0; key < 16; key++) {
+            for (int key = 0; key < 16; key++) {
                 if (keyboard.isKeyPressed(key)) {
                     V[arg_x(instr)] = key;
                 }
@@ -391,19 +392,19 @@ class Chip8Core {
     }
 
     private void op_Fx1E_ADD(int instr) {
-        I = (I + V[arg_x(instr)] & 0xFF) & 0xFFF;
+        I = (I + V[arg_x(instr)]) & 0xFFF;
     }
 
     private void op_Fx29_LD(int instr) {
-        I = 5 * (V[arg_x(instr)] & 0xFF);
+        I = 5 * V[arg_x(instr)];
     }
 
     private void op_Fx33_LD(int instr) {
-        int number = V[arg_x(instr)] & 0xFF;
+        int number = V[arg_x(instr)];
 
-        memory[I] = (byte) (number / 100);
-        memory[I + 1] = (byte) ((number / 10) % 10);
-        memory[I + 2] = (byte) (number % 10);
+        memory[I] = number / 100;
+        memory[I + 1] = (number / 10) % 10;
+        memory[I + 2] = number % 10;
     }
 
     private void op_Fx55_LD(int instr) {

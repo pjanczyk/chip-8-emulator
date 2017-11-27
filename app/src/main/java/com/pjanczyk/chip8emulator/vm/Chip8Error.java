@@ -1,6 +1,9 @@
 package com.pjanczyk.chip8emulator.vm;
 
-public class Chip8Error {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Chip8Error implements Parcelable {
 
     public enum Type {
         STACK_OVERFLOW,
@@ -44,4 +47,34 @@ public class Chip8Error {
             return type.toString() + ": " + message;
         }
     }
+
+    private Chip8Error(Parcel in) {
+        message = in.readString();
+        instruction = in.readInt();
+        programCounter = in.readInt();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(message);
+        dest.writeInt(instruction);
+        dest.writeInt(programCounter);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Chip8Error> CREATOR = new Creator<Chip8Error>() {
+        @Override
+        public Chip8Error createFromParcel(Parcel in) {
+            return new Chip8Error(in);
+        }
+
+        @Override
+        public Chip8Error[] newArray(int size) {
+            return new Chip8Error[size];
+        }
+    };
 }

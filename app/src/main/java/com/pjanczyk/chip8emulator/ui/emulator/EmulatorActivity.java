@@ -3,6 +3,7 @@ package com.pjanczyk.chip8emulator.ui.emulator;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -13,18 +14,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.pjanczyk.chip8emulator.R;
 import com.pjanczyk.chip8emulator.model.Program;
 import com.pjanczyk.chip8emulator.vm.Chip8Error;
-import com.pjanczyk.chip8emulator.vm.Chip8VM;
 import com.pjanczyk.chip8emulator.vm.Chip8ReadOnlyDisplay;
+import com.pjanczyk.chip8emulator.vm.Chip8VM;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class EmulatorActivity extends AppCompatActivity implements Chip8VM.Listener {
+public class EmulatorActivity extends AppCompatActivity {
 
     public static final String EXTRA_PROGRAM = "program";
 
@@ -39,6 +41,24 @@ public class EmulatorActivity extends AppCompatActivity implements Chip8VM.Liste
     private boolean visible;
 
     private Chip8VM vm;
+
+    private final Chip8VM.Listener vmListener = new Chip8VM.Listener() {
+        @Override
+        public void onDisplayRedraw(Chip8ReadOnlyDisplay display) {
+            displayView.requestRender();
+        }
+
+        @Override
+        public void onError(Chip8Error error) {
+            errorHandler.obtainMessage(0, error).sendToTarget();
+        }
+    };
+
+    private final Handler errorHandler = new Handler(Looper.getMainLooper(), msg -> {
+        Chip8Error error = (Chip8Error) msg.obj;
+        Toast.makeText(EmulatorActivity.this, "Error: " + error.toString(), Toast.LENGTH_LONG).show();
+        return true;
+    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +78,9 @@ public class EmulatorActivity extends AppCompatActivity implements Chip8VM.Liste
 
         vm = new Chip8VM();
 
-        vm.setListener(this);
+        vm.setClockPeriods(1_000_000_000 / 20, 1_000_000_000 / 2);
+
+        vm.setListener(vmListener);
         vm.loadProgram(programBytecode);
         vm.start();
 
@@ -150,13 +172,4 @@ public class EmulatorActivity extends AppCompatActivity implements Chip8VM.Liste
         appBar.setVisibility(View.VISIBLE);
     }
 
-    @Override
-    public void onDisplayRedraw(Chip8ReadOnlyDisplay display) {
-        displayView.requestRender();
-    }
-
-    @Override
-    public void onError(Chip8Error error) {
-        throw new UnsupportedOperationException(error.toString());
-    }
 }
