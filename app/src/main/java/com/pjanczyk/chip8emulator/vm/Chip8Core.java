@@ -9,6 +9,8 @@ import java.util.Random;
 
 class Chip8Core {
 
+    private static final String TAG = "Chip8Core";
+
     private static final int[] DEFAULT_SPRITES = {
             0xF0, 0x90, 0x90, 0x90, 0xF0, //0
             0x20, 0x60, 0x20, 0x20, 0x70, //1
@@ -64,7 +66,7 @@ class Chip8Core {
         }
 
         for (int i = 0; i < program.length; i++) {
-            memory[512 + i] = program[i];
+            memory[512 + i] = program[i] & 0xFF;
         }
     }
 
@@ -78,8 +80,13 @@ class Chip8Core {
     }
 
     public Chip8Error executeNextInstruction() {
+        if (PC + 1 >= memory.length) {
+            return new Chip8Error(Chip8Error.Type.PROGRAM_COUNTER_OUT_OF_RANGE,
+                    null, 0, PC);
+        }
+
         int instruction = (memory[PC] << 8) | memory[PC + 1];
-        Log.d("C8-VM", "Line " + ((PC - 512) / 2) + ", instr :" + Integer.toHexString(instruction));
+        Log.d(TAG, "PC = " + PC + ", instr :" + Integer.toHexString(instruction));
         PC += 2;
 
         if (!executeInstruction(instruction)) {

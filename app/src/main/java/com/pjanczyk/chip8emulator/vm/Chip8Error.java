@@ -8,7 +8,8 @@ public class Chip8Error implements Parcelable {
     public enum Type {
         STACK_OVERFLOW,
         STACK_UNDERFLOW,
-        INVALID_INSTRUCTION
+        INVALID_INSTRUCTION,
+        PROGRAM_COUNTER_OUT_OF_RANGE
     }
 
     private Type type;
