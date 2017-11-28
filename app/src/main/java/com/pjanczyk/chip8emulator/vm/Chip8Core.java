@@ -1,7 +1,5 @@
 package com.pjanczyk.chip8emulator.vm;
 
-import android.util.Log;
-
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
@@ -44,8 +42,6 @@ class Chip8Core {
     Chip8Display display;
     Chip8Keyboard keyboard;
 
-    Chip8Error lastError = null;
-
     Chip8Core(Chip8Display display, Chip8Keyboard keyboard) {
         this.display = display;
         this.keyboard = keyboard;
@@ -79,30 +75,22 @@ class Chip8Core {
         }
     }
 
-    public Chip8Error executeNextInstruction() {
+    public void executeNextInstruction() throws Chip8EmulationException {
         if (PC + 1 >= memory.length) {
-            return new Chip8Error(Chip8Error.Type.PROGRAM_COUNTER_OUT_OF_RANGE,
-                    null, 0, PC);
+            throw new Chip8EmulationException(
+                    Chip8EmulationException.Type.PROGRAM_COUNTER_OUT_OF_RANGE,
+                    "Program counter out of range", 0, PC);
         }
 
         int instruction = (memory[PC] << 8) | memory[PC + 1];
-        Log.d(TAG, "PC = " + PC + ", instr :" + Integer.toHexString(instruction));
+        //Log.v(TAG, String.format("PC: %d, instruction: 0x%4x", PC, instruction));
         PC += 2;
 
         if (!executeInstruction(instruction)) {
-            lastError = new Chip8Error(
-                    Chip8Error.Type.INVALID_INSTRUCTION,
-                    null,
-                    instruction,
-                    PC);
+            throw new Chip8EmulationException(
+                    Chip8EmulationException.Type.INVALID_INSTRUCTION,
+                    "Invalid instruction", instruction, PC);
         }
-
-        if (lastError != null) {
-            Chip8Error temp = lastError;
-            lastError = null;
-            return temp;
-        }
-        return null;
     }
 
     public void loadDefaults() {
@@ -121,7 +109,7 @@ class Chip8Core {
     }
 
     // @formatter:off
-    boolean executeInstruction(int instr) {
+    boolean executeInstruction(int instr) throws Chip8EmulationException {
         switch (instr & 0xF000) {
             case 0x0000:
                 switch (instr) {
@@ -210,12 +198,11 @@ class Chip8Core {
         display.clear();
     }
 
-    private void op_00EE_RET(int instr) {
+    private void op_00EE_RET(int instr) throws Chip8EmulationException {
         if (stack.isEmpty()) {
-            lastError = new Chip8Error(
-                    Chip8Error.Type.STACK_UNDERFLOW,
+            throw new Chip8EmulationException(
+                    Chip8EmulationException.Type.STACK_UNDERFLOW,
                     "Stack underflow error (RET instruction)", instr, PC);
-            return;
         }
 
         PC = stack.pop();
@@ -225,12 +212,11 @@ class Chip8Core {
         PC = arg_nnn(instr);
     }
 
-    private void op_2nnn_CALL(int instr) {
+    private void op_2nnn_CALL(int instr) throws Chip8EmulationException {
         if (stack.size() == 24) {
-            lastError = new Chip8Error(
-                    Chip8Error.Type.STACK_OVERFLOW,
+            throw new Chip8EmulationException(
+                    Chip8EmulationException.Type.STACK_OVERFLOW,
                     "Stack overflow error (CALL instruction)", instr, PC);
-            return;
         }
 
         stack.push(PC);

@@ -18,14 +18,10 @@ import android.widget.Toast;
 
 import com.pjanczyk.chip8emulator.R;
 import com.pjanczyk.chip8emulator.model.Program;
-import com.pjanczyk.chip8emulator.vm.Chip8Error;
+import com.pjanczyk.chip8emulator.vm.Chip8EmulationException;
 import com.pjanczyk.chip8emulator.vm.Chip8ReadOnlyDisplay;
 import com.pjanczyk.chip8emulator.vm.Chip8VM;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- */
 public class EmulatorActivity extends AppCompatActivity {
 
     public static final String EXTRA_PROGRAM = "program";
@@ -49,14 +45,15 @@ public class EmulatorActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onError(Chip8Error error) {
-            errorHandler.obtainMessage(0, error).sendToTarget();
+        public void onError(Chip8EmulationException ex) {
+            errorHandler.obtainMessage(0, ex).sendToTarget();
         }
     };
 
     private final Handler errorHandler = new Handler(Looper.getMainLooper(), msg -> {
-        Chip8Error error = (Chip8Error) msg.obj;
+        Chip8EmulationException error = (Chip8EmulationException) msg.obj;
         Toast.makeText(EmulatorActivity.this, "Error: " + error.toString(), Toast.LENGTH_LONG).show();
+        EmulatorActivity.this.finish();
         return true;
     });
 

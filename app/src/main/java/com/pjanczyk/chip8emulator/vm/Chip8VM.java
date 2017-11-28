@@ -102,16 +102,16 @@ public class Chip8VM {
     }
 
     private void onInstructionClockTick() {
-        final Chip8Error error = core.executeNextInstruction();
-
-        if (error != null) {
-            Log.d(TAG, error.toString());
+        try {
+            core.executeNextInstruction();
+        } catch (Chip8EmulationException ex) {
+            Log.d(TAG, "Emulation error", ex);
 
             new Thread(() -> {
                 Chip8VM.this.stop();
                 Listener listener = this.listener;
                 if (listener != null) {
-                    listener.onError(error);
+                    listener.onError(ex);
                 }
             }).start();
 
@@ -137,6 +137,6 @@ public class Chip8VM {
     public interface Listener {
         void onDisplayRedraw(Chip8ReadOnlyDisplay display);
 
-        void onError(Chip8Error error);
+        void onError(Chip8EmulationException ex);
     }
 }
