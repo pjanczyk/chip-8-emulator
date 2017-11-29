@@ -1,17 +1,22 @@
 package com.pjanczyk.chip8emulator.ui.emulator;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 
+import com.pjanczyk.chip8emulator.R;
+
 public class KeyboardView extends TableLayout {
 
     private static final int COLUMNS = 4;
     private static final int ROWS = 4;
+
     private static final String[] KEY_DESCRIPTIONS = {
             "1", "2", "3", "C",
             "4", "5", "6", "D",
@@ -26,29 +31,30 @@ public class KeyboardView extends TableLayout {
     };
 
     private KeyListener keyListener;
-    private OnTouchListener buttonTouchListener = new OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            if (keyListener != null) {
-                int key = (int) v.getTag();
 
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    keyListener.onKeyStateChanged(key, true);
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    keyListener.onKeyStateChanged(key, false);
-                }
+    @SuppressLint("ClickableViewAccessibility")
+    private final OnTouchListener buttonTouchListener = (View v, MotionEvent event) -> {
+        if (keyListener != null) {
+            int key = (int) v.getTag();
+
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                keyListener.onKeyStateChanged(key, true);
+            } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                keyListener.onKeyStateChanged(key, false);
             }
-
-            return false;
         }
+        return false;
     };
 
     public KeyboardView(Context context) {
         this(context, null);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     public KeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        LayoutInflater inflater = LayoutInflater.from(context);
 
         for (int r = 0; r < ROWS; r++) {
             TableRow row = new TableRow(getContext());
@@ -57,9 +63,9 @@ public class KeyboardView extends TableLayout {
             for (int c = 0; c < COLUMNS; c++) {
 
                 int index = r * COLUMNS + c;
-                Button button = new Button(getContext());
-                button.setBackgroundColor(0xff000000);
-                button.setTextColor(0xffe5e5e5);
+                Button button = (Button) inflater.inflate(
+                        R.layout.keyboard_button, null, false);
+
                 button.setLayoutParams(
                         new TableRow.LayoutParams(0, TableRow.LayoutParams.MATCH_PARENT, 1f));
 

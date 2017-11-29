@@ -1,19 +1,16 @@
 package com.pjanczyk.chip8emulator.ui.emulator;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.pjanczyk.chip8emulator.R;
@@ -26,15 +23,17 @@ public class EmulatorActivity extends AppCompatActivity {
 
     public static final String EXTRA_PROGRAM = "program";
 
-    private Program program;
-    private byte[] programBytecode;
-
-    private final Handler hideHandler = new Handler();
     private DisplayView displayView;
     private KeyboardView keyboardView;
     private AppBarLayout appBar;
     private Toolbar toolbar;
-    private boolean visible;
+
+    private Handler mainThreadHandler;
+
+    private Program program;
+    private byte[] programBytecode;
+
+    private boolean paused;
 
     private Chip8VM vm;
 
@@ -46,36 +45,42 @@ public class EmulatorActivity extends AppCompatActivity {
 
         @Override
         public void onError(Chip8EmulationException ex) {
-            errorHandler.obtainMessage(0, ex).sendToTarget();
+            mainThreadHandler.post(() -> {
+                Toast.makeText(EmulatorActivity.this,
+                        "Error: " + ex.toString(), Toast.LENGTH_LONG).show();
+                EmulatorActivity.this.finish();
+            });
         }
     };
-
-    private final Handler errorHandler = new Handler(Looper.getMainLooper(), msg -> {
-        Chip8EmulationException error = (Chip8EmulationException) msg.obj;
-        Toast.makeText(EmulatorActivity.this, "Error: " + error.toString(), Toast.LENGTH_LONG).show();
-        EmulatorActivity.this.finish();
-        return true;
-    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Bundle extras = getIntent().getExtras();
-        program = extras.getParcelable(EXTRA_PROGRAM);
-        programBytecode = program.readBytecode(this);
-
         setContentView(R.layout.activity_emulator);
-
-        visible = true;
         appBar = findViewById(R.id.appbar);
         toolbar = findViewById(R.id.toolbar);
         displayView = findViewById(R.id.display);
         keyboardView = findViewById(R.id.keyboard);
 
+        setSupportActionBar(toolbar);
+        //noinspection ConstantConditions
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        Intent intent = getIntent();
+        program = intent.getParcelableExtra(EXTRA_PROGRAM);
+        if (program == null) {
+            throw new NullPointerException();
+        }
+
+        programBytecode = program.readBytecode(this);
+
+        mainThreadHandler = new Handler(getMainLooper());
+
+        paused = true;
         vm = new Chip8VM();
 
-        vm.setClockPeriods(1_000_000_000 / 20, 1_000_000_000 / 2);
+//        vm.setClockPeriods(1_000_000_000 / 20, 1_000_000_000 / 2);
 
         vm.setListener(vmListener);
         vm.loadProgram(programBytecode);
@@ -86,34 +91,25 @@ public class EmulatorActivity extends AppCompatActivity {
             toggle();
         });
 
-        double aspectRatio =
-                (double) vm.getDisplay().getHeight() / (double) vm.getDisplay().getWidth();
-
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        int displayWidth = metrics.widthPixels;
-        int displayHeight = (int) (aspectRatio * metrics.widthPixels);
-        displayView.setLayoutParams(new FrameLayout.LayoutParams(displayWidth, displayHeight));
-
-        int keyboardSize = Math.min(displayWidth, metrics.heightPixels - displayHeight);
-        keyboardView.setLayoutParams(new LinearLayout.LayoutParams(keyboardSize, keyboardSize));
-
-
         keyboardView.setKeyListener((key, pressed) -> {
             vm.getKeyboard().setKeyPressed(key, pressed);
         });
 
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setTitle(program.getDisplayName());
-
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
 
-        show();
-        hideHandler.postDelayed(this::hide, 150);
+        resumeVM();
+        mainThreadHandler.postDelayed(this::pauseVM, 150);
+    }
+
+    @Override
+    protected void onDestroy() {
+        vm.stop();
+        super.onDestroy();
     }
 
     @Override
@@ -133,17 +129,17 @@ public class EmulatorActivity extends AppCompatActivity {
     }
 
     private void toggle() {
-        hideHandler.removeCallbacks(this::hide);
-        if (visible) {
-            hide();
+        mainThreadHandler.removeCallbacks(this::pauseVM);
+        if (paused) {
+            resumeVM();
         } else {
-            show();
+            pauseVM();
         }
     }
 
     @SuppressLint("InlinedApi")
-    private void hide() {
-        visible = false;
+    private void pauseVM() {
+        paused = true;
         appBar.setVisibility(View.GONE);
 
 
@@ -159,8 +155,8 @@ public class EmulatorActivity extends AppCompatActivity {
     }
 
     @SuppressLint("InlinedApi")
-    private void show() {
-        visible = true;
+    private void resumeVM() {
+        paused = false;
 
         // Show the system bar
         displayView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
