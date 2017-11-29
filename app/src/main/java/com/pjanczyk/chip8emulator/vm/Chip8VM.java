@@ -4,7 +4,6 @@ import android.util.Log;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class Chip8VM {
@@ -14,22 +13,17 @@ public class Chip8VM {
 
     private static final String TAG = "Chip8VM";
 
-    private final Object isRunningLock = new Object();
-
-    private final ScheduledExecutorService scheduler;
-    private final Chip8Core core;
-
     private volatile Listener listener;
-    private volatile boolean isRunning;
 
     private volatile int instructionClockPeriod = DEFAULT_INSTRUCTION_CLOCK_INTERVAL;
     private volatile int timerClockPeriod = DEFAULT_TIMER_CLOCK_INTERVAL;
 
-    private volatile ScheduledFuture instructionClockFuture;
-    private volatile ScheduledFuture timerClockFuture;
+    private final Object stateLock = new Object();
+    private volatile ScheduledExecutorService executor;
+
+    private final Chip8Core core;
 
     public Chip8VM() {
-        scheduler = Executors.newSingleThreadScheduledExecutor();
         core = new Chip8Core(new Chip8Display(), new Chip8Keyboard());
     }
 
@@ -42,7 +36,7 @@ public class Chip8VM {
     }
 
     public boolean isRunning() {
-        return isRunning;
+        return executor != null;
     }
 
     public void setListener(Listener listener) {
@@ -50,7 +44,7 @@ public class Chip8VM {
     }
 
     public void setClockPeriods(int instructionClockPeriod, int timerClockPeriod) {
-        synchronized (isRunningLock) {
+        synchronized (stateLock) {
             assertStopped();
             this.instructionClockPeriod = instructionClockPeriod;
             this.timerClockPeriod = timerClockPeriod;
@@ -58,54 +52,60 @@ public class Chip8VM {
     }
 
     public void clearMemory() {
-        synchronized (isRunningLock) {
+        synchronized (stateLock) {
             assertStopped();
             core.loadDefaults();
         }
     }
 
     public void loadProgram(byte[] bytecode) {
-        synchronized (isRunningLock) {
+        synchronized (stateLock) {
             assertStopped();
             core.loadProgram(bytecode);
         }
     }
 
     public void start() {
-        synchronized (isRunningLock) {
+        synchronized (stateLock) {
             assertStopped();
-            isRunning = true;
 
-            instructionClockFuture = scheduler.scheduleAtFixedRate(this::onInstructionClockTick,
+            executor = Executors.newSingleThreadScheduledExecutor();
+            executor.scheduleAtFixedRate(this::onInstructionClockTick,
                     0, instructionClockPeriod, TimeUnit.NANOSECONDS);
-
-            timerClockFuture = scheduler.scheduleAtFixedRate(this::onTimerClockTick,
+            executor.scheduleAtFixedRate(this::onTimerClockTick,
                     timerClockPeriod, timerClockPeriod, TimeUnit.NANOSECONDS);
+
+            Log.d(TAG, "Execution started");
         }
     }
 
     public void stop() {
-        synchronized (isRunningLock) {
-            if (isRunning) {
-                isRunning = false;
-
-                instructionClockFuture.cancel(false);
-                timerClockFuture.cancel(false);
+        synchronized (stateLock) {
+            if (isRunning()) {
+                executor.shutdown();
 
                 try {
-                    scheduler.awaitTermination(1, TimeUnit.SECONDS);
+                    executor.awaitTermination(1, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
+
+                executor = null;
+
+                Log.d(TAG, "Execution stopped");
             }
         }
     }
 
     private void onInstructionClockTick() {
+        Log.v(TAG, "onInstructionClockTick");
+
         try {
             core.executeNextInstruction();
         } catch (Chip8EmulationException ex) {
             Log.d(TAG, "Emulation error", ex);
+
+            executor.shutdown(); // request stop
 
             new Thread(() -> {
                 Chip8VM.this.stop();
@@ -125,11 +125,13 @@ public class Chip8VM {
     }
 
     private void onTimerClockTick() {
+        Log.v(TAG, "onTimerClockTick");
+
         core.decreaseTimers();
     }
 
     private void assertStopped() {
-        if (isRunning) {
+        if (isRunning()) {
             throw new IllegalStateException("VM is running");
         }
     }
