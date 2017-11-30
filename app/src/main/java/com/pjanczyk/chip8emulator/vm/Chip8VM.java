@@ -31,7 +31,7 @@ public class Chip8VM {
         return core.getDisplay();
     }
 
-    public Chip8Keyboard getKeyboard() {
+    public Chip8KeyboardInput getKeyboard() {
         return core.getKeyboard();
     }
 

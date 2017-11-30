@@ -364,15 +364,11 @@ class Chip8Core {
     }
 
     private void op_Fx0A_LD(int instr) {
-        if (!keyboard.isAnyKeyPressed()) {
-            PC -= 2; //repeat this instruction
-            // TODO: *all* execution stops?
+        int key = keyboard.readKeyPressed();
+        if (key != -1) {
+            V[arg_x(instr)] = key;
         } else {
-            for (int key = 0; key < 16; key++) {
-                if (keyboard.isKeyPressed(key)) {
-                    V[arg_x(instr)] = key;
-                }
-            }
+            PC -= 2;
         }
     }
 
