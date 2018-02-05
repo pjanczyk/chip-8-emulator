@@ -1,6 +1,7 @@
 package com.pjanczyk.chip8emulator.ui.emulator;
 
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.LiveDataReactiveStreams;
 import android.arch.lifecycle.ViewModel;
 
 import com.pjanczyk.chip8emulator.model.Program;
@@ -18,7 +19,7 @@ public class EmulatorViewModel extends ViewModel {
     }
 
     public void init(int programId) {
-        this.program = repository.getProgram(programId);
+        this.program = LiveDataReactiveStreams.fromPublisher(repository.getProgram(programId));
     }
 
     public LiveData<Program> getProgram() {

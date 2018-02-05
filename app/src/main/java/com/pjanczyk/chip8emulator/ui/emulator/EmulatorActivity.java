@@ -85,9 +85,9 @@ public class EmulatorActivity extends AppCompatActivity {
                 .get(EmulatorViewModel.class);
         viewModel.init(programId);
 
-        viewModel.getProgram().observe(this, program1 -> {
-            if (program != null) {
-                this.program = program1;
+        viewModel.getProgram().observe(this, program -> {
+            if (this.program != null) {
+                this.program = program;
                 init();
                 viewModel.getProgram().removeObservers(this);
             }

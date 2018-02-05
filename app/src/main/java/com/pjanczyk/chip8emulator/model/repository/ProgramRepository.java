@@ -1,7 +1,5 @@
 package com.pjanczyk.chip8emulator.model.repository;
 
-import android.arch.lifecycle.LiveData;
-
 import com.pjanczyk.chip8emulator.model.Program;
 import com.pjanczyk.chip8emulator.model.ProgramInfo;
 import com.pjanczyk.chip8emulator.model.db.ProgramDao;
@@ -12,6 +10,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import io.reactivex.Flowable;
+
 @Singleton
 public class ProgramRepository {
     private final ProgramDao programDao;
@@ -21,15 +21,15 @@ public class ProgramRepository {
         this.programDao = programDao;
     }
 
-    public LiveData<List<ProgramInfo>> getBuiltInPrograms() {
+    public Flowable<List<ProgramInfo>> getBuiltInPrograms() {
         return programDao.getBuiltInPrograms();
     }
 
-    public LiveData<List<ProgramInfo>> getRecentPrograms(int limit) {
+    public Flowable<List<ProgramInfo>> getRecentPrograms(int limit) {
         return programDao.getRecentPrograms(limit);
     }
 
-    public LiveData<Program> getProgram(int programId) {
+    public Flowable<Program> getProgram(int programId) {
         return programDao.getProgramById(programId);
     }
 

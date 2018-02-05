@@ -1,6 +1,5 @@
 package com.pjanczyk.chip8emulator.model.db;
 
-import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
@@ -11,6 +10,8 @@ import com.pjanczyk.chip8emulator.model.ProgramInfo;
 
 import java.util.Date;
 import java.util.List;
+
+import io.reactivex.Flowable;
 
 @Dao
 public interface ProgramDao {
@@ -24,7 +25,7 @@ public interface ProgramDao {
     void updateProgram(Program program);
 
     @Query("SELECT * FROM Program WHERE id = :id")
-    LiveData<Program> getProgramById(int id);
+    Flowable<Program> getProgramById(int id);
 
     @Query("UPDATE Program " +
             "SET lastOpenedAt = :lastOpenedAt " +
@@ -34,12 +35,12 @@ public interface ProgramDao {
     @Query("SELECT id, name, isBuiltIn, author, releaseDate, description, lastOpenedAt " +
             "FROM Program " +
             "WHERE isBuiltIn = 1")
-    LiveData<List<ProgramInfo>> getBuiltInPrograms();
+    Flowable<List<ProgramInfo>> getBuiltInPrograms();
 
     @Query("SELECT id, name, isBuiltIn, author, releaseDate, description, lastOpenedAt " +
             "FROM Program " +
             "WHERE lastOpenedAt IS NOT NULL " +
             "ORDER BY lastOpenedAt DESC " +
             "LIMIT :limit")
-    LiveData<List<ProgramInfo>> getRecentPrograms(int limit);
+    Flowable<List<ProgramInfo>> getRecentPrograms(int limit);
 }
