@@ -7,14 +7,12 @@ import java.util.List;
 
 @Root
 class BuiltInProgramList {
-
     @ElementList(inline = true, type = BuiltInProgram.class, entry = "program")
-    private List<Program> programs;
+    private List<BuiltInProgram> programs;
 
-    private BuiltInProgramList() {
-    }
+    private BuiltInProgramList() {}
 
-    public List<Program> getPrograms() {
+    public List<BuiltInProgram> getPrograms() {
         return programs;
     }
 }

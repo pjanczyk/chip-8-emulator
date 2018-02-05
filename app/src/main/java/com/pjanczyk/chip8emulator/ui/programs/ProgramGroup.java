@@ -1,15 +1,15 @@
 package com.pjanczyk.chip8emulator.ui.programs;
 
-import com.pjanczyk.chip8emulator.model.Program;
+import com.pjanczyk.chip8emulator.model.ProgramInfo;
 
 import java.util.List;
 
 public class ProgramGroup {
 
     public final String name;
-    public final List<Program> programs;
+    public final List<ProgramInfo> programs;
 
-    public ProgramGroup(String name, List<Program> programs) {
+    public ProgramGroup(String name, List<ProgramInfo> programs) {
         this.name = name;
         this.programs = programs;
     }

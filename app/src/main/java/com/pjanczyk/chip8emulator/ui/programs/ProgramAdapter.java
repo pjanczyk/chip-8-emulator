@@ -7,9 +7,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.pjanczyk.chip8emulator.R;
-import com.pjanczyk.chip8emulator.model.BuiltInProgram;
-import com.pjanczyk.chip8emulator.model.ExternalProgram;
 import com.pjanczyk.chip8emulator.model.Program;
+import com.pjanczyk.chip8emulator.model.ProgramInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,26 +53,13 @@ public class ProgramAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             holder.textViewTitle.setText(item.name);
         } else {
             ItemViewHolder holder = (ItemViewHolder) viewHolder;
-            Program program = (Program) items.get(position);
+            ProgramInfo program = (ProgramInfo) items.get(position);
 
-            String name;
-            String details;
-
-            if (program instanceof BuiltInProgram) {
-                BuiltInProgram builtInProgram = (BuiltInProgram) program;
-                name = builtInProgram.getTitle();
-                details = builtInProgram.getAuthor();
-            } else {
-                ExternalProgram externalProgram = (ExternalProgram) program;
-                name = externalProgram.getUri().getLastPathSegment();
-                details = externalProgram.getUri().toString();
-            }
-
-            holder.textViewName.setText(name);
-            holder.textViewDetails.setText(details);
+            holder.textViewName.setText(program.getName());
+            holder.textViewDetails.setText(program.getAuthor());
 
             holder.itemView.setOnClickListener(v -> {
-                Program p = (Program) items.get(holder.getAdapterPosition());
+                ProgramInfo p = (ProgramInfo) items.get(holder.getAdapterPosition());
                 itemClickListener.onItemClicked(p);
             });
         }
@@ -96,7 +82,7 @@ public class ProgramAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     public interface ItemClickListener {
-        void onItemClicked(Program program);
+        void onItemClicked(ProgramInfo program);
     }
 
     private static class SubheaderViewHolder extends RecyclerView.ViewHolder {

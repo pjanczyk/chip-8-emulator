@@ -1,5 +1,6 @@
 package com.pjanczyk.chip8emulator.ui.programs;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -7,22 +8,25 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.widget.Toast;
 
-import com.google.common.collect.Lists;
+import com.google.common.io.ByteStreams;
 import com.pjanczyk.chip8emulator.R;
-import com.pjanczyk.chip8emulator.model.ExternalProgram;
-import com.pjanczyk.chip8emulator.model.Program;
-import com.pjanczyk.chip8emulator.model.ProgramRepository;
+import com.pjanczyk.chip8emulator.di.AppComponent;
+import com.pjanczyk.chip8emulator.di.DaggerAppComponent;
+import com.pjanczyk.chip8emulator.di.ViewModelFactory;
+import com.pjanczyk.chip8emulator.model.ProgramInfo;
 import com.pjanczyk.chip8emulator.ui.emulator.EmulatorActivity;
 
-import java.util.List;
+import java.io.InputStream;
 
 public class ProgramsActivity extends AppCompatActivity {
+    private static final int REQUEST_CODE_GET_CONTENT = 100;
+    private static final String TAG = "ProgramsActivity";
 
-    private static int REQUEST_CODE_GET_CONTENT = 100;
-
-    private ProgramRepository repository;
     private ProgramAdapter adapter;
+    private ProgramsViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,26 +41,41 @@ public class ProgramsActivity extends AppCompatActivity {
 
         fab.setOnClickListener(view -> onButtonOpenClicked());
 
-        repository = new ProgramRepository(this);
+        AppComponent appComponent = DaggerAppComponent.builder()
+                .application(getApplication())
+                .build();
 
-        List<ProgramGroup> groups = Lists.newArrayList(
-                new ProgramGroup("Recent programs", repository.getRecentPrograms()),
-                new ProgramGroup("Built-in programs", repository.getBuiltinPrograms())
-        );
+        ViewModelFactory viewModelFactory = appComponent.viewModelFactory();
 
-        adapter = new ProgramAdapter(groups, this::onProgramClicked);
-        recyclerView.setAdapter(adapter);
+        viewModel = ViewModelProviders.of(this, viewModelFactory)
+                .get(ProgramsViewModel.class);
+
+        viewModel.getProgramGroups().observe(this, programGroups -> {
+            adapter = new ProgramAdapter(programGroups, this::onProgramClicked);
+            recyclerView.setAdapter(adapter);
+        });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        if (requestCode == REQUEST_CODE_GET_CONTENT && resultCode == RESULT_OK) {
-            Uri uri = intent.getData();
-            ExternalProgram program = new ExternalProgram(uri);
+        if (requestCode != REQUEST_CODE_GET_CONTENT || resultCode != RESULT_OK) return;
 
-            byte[] bytecode = program.readBytecode(this);
-            // TODO: add program to list
+        Uri uri = intent.getData();
+        if (uri == null) return;
+
+        byte[] bytecode;
+
+        try (InputStream stream = getContentResolver().openInputStream(uri)) {
+            bytecode = ByteStreams.toByteArray(stream);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to import program", e);
+            Toast.makeText(this, "Failed to import program", Toast.LENGTH_LONG)
+                    .show();
+            return;
         }
+
+        String name = uri.getLastPathSegment();
+        viewModel.addImportedProgram(name, bytecode);
     }
 
     private void onButtonOpenClicked() {
@@ -65,9 +84,9 @@ public class ProgramsActivity extends AppCompatActivity {
         startActivityForResult(intent, REQUEST_CODE_GET_CONTENT);
     }
 
-    private void onProgramClicked(Program program) {
+    private void onProgramClicked(ProgramInfo program) {
         Intent intent = new Intent(this, EmulatorActivity.class);
-        intent.putExtra(EmulatorActivity.EXTRA_PROGRAM, program);
+        intent.putExtra(EmulatorActivity.EXTRA_PROGRAM_ID, program.getId());
         startActivity(intent);
     }
 }

@@ -1,6 +1,7 @@
 package com.pjanczyk.chip8emulator.ui.emulator;
 
 import android.annotation.SuppressLint;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,6 +15,9 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.pjanczyk.chip8emulator.R;
+import com.pjanczyk.chip8emulator.di.AppComponent;
+import com.pjanczyk.chip8emulator.di.DaggerAppComponent;
+import com.pjanczyk.chip8emulator.di.ViewModelFactory;
 import com.pjanczyk.chip8emulator.model.Program;
 import com.pjanczyk.chip8emulator.vm.Chip8EmulationException;
 import com.pjanczyk.chip8emulator.vm.Chip8ReadOnlyDisplay;
@@ -21,7 +25,9 @@ import com.pjanczyk.chip8emulator.vm.Chip8VM;
 
 public class EmulatorActivity extends AppCompatActivity {
 
-    public static final String EXTRA_PROGRAM = "program";
+    public static final String EXTRA_PROGRAM_ID = "program_id";
+
+    private EmulatorViewModel viewModel;
 
     private DisplayView displayView;
     private KeyboardView keyboardView;
@@ -31,7 +37,6 @@ public class EmulatorActivity extends AppCompatActivity {
     private Handler mainThreadHandler;
 
     private Program program;
-    private byte[] programBytecode;
 
     private boolean paused;
 
@@ -68,13 +73,28 @@ public class EmulatorActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
-        program = intent.getParcelableExtra(EXTRA_PROGRAM);
-        if (program == null) {
-            throw new NullPointerException();
-        }
+        int programId = intent.getIntExtra(EXTRA_PROGRAM_ID, 0);
 
-        programBytecode = program.readBytecode(this);
+        AppComponent appComponent = DaggerAppComponent.builder()
+                .application(getApplication())
+                .build();
 
+        ViewModelFactory viewModelFactory = appComponent.viewModelFactory();
+
+        viewModel = ViewModelProviders.of(this, viewModelFactory)
+                .get(EmulatorViewModel.class);
+        viewModel.init(programId);
+
+        viewModel.getProgram().observe(this, program1 -> {
+            if (program != null) {
+                this.program = program1;
+                init();
+                viewModel.getProgram().removeObservers(this);
+            }
+        });
+    }
+
+    private void init() {
         mainThreadHandler = new Handler(getMainLooper());
 
         paused = true;
@@ -83,7 +103,7 @@ public class EmulatorActivity extends AppCompatActivity {
 //        vm.setClockPeriods(1_000_000_000 / 20, 1_000_000_000 / 2);
 
         vm.setListener(vmListener);
-        vm.loadProgram(programBytecode);
+        vm.loadProgram(program.getBytecode());
         vm.start();
 
         displayView.setDisplay(vm.getDisplay());
@@ -95,7 +115,7 @@ public class EmulatorActivity extends AppCompatActivity {
             vm.getKeyboard().setKeyPressed(key, pressed);
         });
 
-        setTitle(program.getDisplayName());
+        setTitle(program.getName());
     }
 
     @Override
@@ -103,7 +123,7 @@ public class EmulatorActivity extends AppCompatActivity {
         super.onPostCreate(savedInstanceState);
 
         resumeVM();
-        mainThreadHandler.postDelayed(this::pauseVM, 150);
+//        mainThreadHandler.postDelayed(this::pauseVM, 150);
     }
 
     @Override
