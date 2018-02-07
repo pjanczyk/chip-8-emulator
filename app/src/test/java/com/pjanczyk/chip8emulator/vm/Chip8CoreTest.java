@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -64,7 +63,6 @@ public class Chip8CoreTest {
         assertEquals(PC0, (int) chip.stack.pop());
         assertEquals(0xABC, chip.PC);
     }
-
 
 
 }
