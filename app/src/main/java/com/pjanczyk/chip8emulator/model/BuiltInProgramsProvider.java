@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.annimon.stream.Stream;
 import com.google.common.io.ByteStreams;
+import com.pjanczyk.chip8emulator.model.xml.BuiltInProgramList;
 
 import org.simpleframework.xml.core.Persister;
 
@@ -22,34 +23,28 @@ public class BuiltInProgramsProvider {
     }
 
     public List<Program> getBuiltInPrograms() {
-        List<BuiltInProgram> builtInPrograms = loadFromXml();
+        BuiltInProgramList builtIn = loadXml();
 
-        return Stream.of(builtInPrograms)
-                .map(bp -> {
+        return Stream.of(builtIn.programs)
+                .map(p -> {
                     byte[] bytecode;
-                    try (InputStream stream = application.getAssets().open(bp.getPath())) {
+                    try (InputStream stream = application.getAssets().open(p.path)) {
                         bytecode = ByteStreams.toByteArray(stream);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    return new Program(0, bp.getTitle(), true,
-                            bp.getAuthor(), bp.getReleaseDate(), bp.getDescription(),
+                    return new Program(0, p.title, true,
+                            p.author, p.releaseDate, p.description,
                             bytecode, null);
                 })
                 .toList();
     }
 
-    private List<BuiltInProgram> loadFromXml() {
-        try {
-            InputStream stream = application.getAssets().open("builtin_programs.xml");
+    private BuiltInProgramList loadXml() {
+        Persister persister = new Persister();
 
-            Persister persister = new Persister();
-            BuiltInProgramList builtinPrograms = persister.read(BuiltInProgramList.class, stream);
-
-            stream.close();
-
-            return builtinPrograms.getPrograms();
-
+        try (InputStream stream = application.getAssets().open("builtin_programs.xml")) {
+            return persister.read(BuiltInProgramList.class, stream);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
