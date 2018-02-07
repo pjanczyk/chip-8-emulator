@@ -1,6 +1,7 @@
 package com.pjanczyk.chip8emulator.ui.emulator;
 
 import android.annotation.SuppressLint;
+import android.arch.lifecycle.Lifecycle;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,11 +18,16 @@ import com.pjanczyk.chip8emulator.R;
 import com.pjanczyk.chip8emulator.di.AppComponent;
 import com.pjanczyk.chip8emulator.di.DaggerAppComponent;
 import com.pjanczyk.chip8emulator.di.ViewModelFactory;
+import com.trello.lifecycle2.android.lifecycle.AndroidLifecycle;
+import com.trello.rxlifecycle2.LifecycleProvider;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 
 public class EmulatorActivity extends AppCompatActivity {
     public static final String EXTRA_PROGRAM_ID = "program_id";
+
+    private final LifecycleProvider<Lifecycle.Event> lifecycleProvider = AndroidLifecycle
+            .createLifecycleProvider(this);
 
     private EmulatorViewModel viewModel;
 
@@ -83,12 +89,13 @@ public class EmulatorActivity extends AppCompatActivity {
         viewModel.getDisplay().observe(this, displayView::setDisplay);
 
         viewModel.getEmulationError()
+                .compose(lifecycleProvider.bindToLifecycle())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(emulationException -> {
                     Toast.makeText(EmulatorActivity.this,
                             "Error: " + emulationException.toString(), Toast.LENGTH_LONG).show();
                     this.finish();
-                }); // TODO: unsubscribe
+                });
 
         displayView.setOnClickListener(view -> {
             viewModel.toggle();
@@ -122,6 +129,5 @@ public class EmulatorActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
 
 }

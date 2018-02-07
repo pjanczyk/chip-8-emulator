@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import io.reactivex.Flowable;
-import io.reactivex.Single;
+import io.reactivex.Maybe;
 
 @Singleton
 public class ProgramRepository {
@@ -30,7 +30,7 @@ public class ProgramRepository {
         return programDao.getRecentPrograms(limit);
     }
 
-    public Single<Program> getProgram(int programId) {
+    public Maybe<Program> getProgram(int programId) {
         return programDao.getProgramById(programId);
     }
 

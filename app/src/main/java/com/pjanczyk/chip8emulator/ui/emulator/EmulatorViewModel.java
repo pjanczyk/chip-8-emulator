@@ -16,12 +16,15 @@ import com.pjanczyk.chip8emulator.vm.Chip8VM;
 import javax.inject.Inject;
 
 import io.reactivex.Observable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 
 public class EmulatorViewModel extends ViewModel {
     private final ProgramRepository repository;
 
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private final MutableLiveData<Program> program = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isRunning = new MutableLiveData<>();
     private final MutableLiveData<Chip8ReadOnlyDisplay> display = new MutableLiveData<>();
@@ -62,8 +65,11 @@ public class EmulatorViewModel extends ViewModel {
         if (initialized) return;
         initialized = true;
 
-        repository.getProgram(programId)
+        Disposable disposable = repository.getProgram(programId)
                 .subscribeOn(Schedulers.io())
+                .doOnComplete(() -> {
+                    throw new RuntimeException("Program with the given id does not exist");
+                })
                 .subscribe(prog -> {
                     program.postValue(prog);
                     isRunning.postValue(true);
@@ -73,10 +79,8 @@ public class EmulatorViewModel extends ViewModel {
                     vm.setListener(new VMListener());
                     vm.loadProgram(prog.getBytecode());
                     vm.start();
-                }, throwable -> {
-                    throw new RuntimeException("Program with the given id does not exist",
-                            throwable);
                 });
+        compositeDisposable.add(disposable);
     }
 
     @MainThread
@@ -102,6 +106,11 @@ public class EmulatorViewModel extends ViewModel {
         } else {
             resume();
         }
+    }
+
+    @Override
+    protected void onCleared() {
+        compositeDisposable.dispose();
     }
 
     private class VMListener implements Chip8VM.Listener {

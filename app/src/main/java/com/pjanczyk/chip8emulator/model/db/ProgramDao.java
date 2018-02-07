@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 import io.reactivex.Flowable;
-import io.reactivex.Single;
+import io.reactivex.Maybe;
 
 @Dao
 public interface ProgramDao {
@@ -26,7 +26,7 @@ public interface ProgramDao {
     void updateProgram(Program program);
 
     @Query("SELECT * FROM Program WHERE id = :id")
-    Single<Program> getProgramById(int id);
+    Maybe<Program> getProgramById(int id);
 
     @Query("UPDATE Program " +
             "SET lastOpenedAt = :lastOpenedAt " +
