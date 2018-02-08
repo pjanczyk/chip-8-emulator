@@ -1,23 +1,52 @@
 package com.pjanczyk.chip8emulator.di;
 
+import android.arch.lifecycle.ViewModel;
+import android.arch.lifecycle.ViewModelProvider;
+
 import com.pjanczyk.chip8emulator.model.db.ProgramDao;
 import com.pjanczyk.chip8emulator.model.db.ProgramDatabase;
 import com.pjanczyk.chip8emulator.model.db.ProgramDatabaseFactory;
+import com.pjanczyk.chip8emulator.ui.emulator.EmulatorActivity;
+import com.pjanczyk.chip8emulator.ui.emulator.EmulatorViewModel;
+import com.pjanczyk.chip8emulator.ui.programs.ProgramsActivity;
+import com.pjanczyk.chip8emulator.ui.programs.ProgramsViewModel;
 
 import javax.inject.Singleton;
 
+import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
+import dagger.android.ContributesAndroidInjector;
+import dagger.multibindings.IntoMap;
 
-@Module(includes = ViewModelModule.class)
-class AppModule {
+@Module
+abstract class AppModule {
+    @ContributesAndroidInjector
+    abstract ProgramsActivity bindProgramsActivity();
+
+    @ContributesAndroidInjector
+    abstract EmulatorActivity bindEmulatorActivity();
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(ProgramsViewModel.class)
+    abstract ViewModel bindProgramsViewModel(ProgramsViewModel programsViewModel);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(EmulatorViewModel.class)
+    abstract ViewModel bindEmulatorViewModel(EmulatorViewModel emulatorViewModel);
+
+    @Binds
+    abstract ViewModelProvider.Factory bindViewModelFactory(ViewModelFactory factory);
+
     @Singleton @Provides
-    ProgramDao provideProgramDao(ProgramDatabase database) {
+    static ProgramDao provideProgramDao(ProgramDatabase database) {
         return database.programDao();
     }
 
     @Singleton @Provides
-    ProgramDatabase provideProgramDatabase(ProgramDatabaseFactory factory) {
+    static ProgramDatabase provideProgramDatabase(ProgramDatabaseFactory factory) {
         return factory.create();
     }
 }

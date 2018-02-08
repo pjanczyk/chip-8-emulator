@@ -1,5 +1,6 @@
 package com.pjanczyk.chip8emulator.ui.programs;
 
+import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
@@ -13,42 +14,42 @@ import android.widget.Toast;
 
 import com.google.common.io.ByteStreams;
 import com.pjanczyk.chip8emulator.R;
-import com.pjanczyk.chip8emulator.di.AppComponent;
-import com.pjanczyk.chip8emulator.di.DaggerAppComponent;
-import com.pjanczyk.chip8emulator.di.ViewModelFactory;
 import com.pjanczyk.chip8emulator.model.ProgramInfo;
 import com.pjanczyk.chip8emulator.ui.emulator.EmulatorActivity;
 
 import java.io.InputStream;
 
+import javax.inject.Inject;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import dagger.android.AndroidInjection;
+
 public class ProgramsActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_GET_CONTENT = 100;
     private static final String TAG = "ProgramsActivity";
 
-    private ProgramAdapter adapter;
+    @Inject ViewModelProvider.Factory viewModelFactory;
+
+    @BindView(R.id.toolbar) Toolbar toolbar;
+    @BindView(R.id.fab) FloatingActionButton buttonOpen;
+    @BindView(R.id.list) RecyclerView recyclerView;
+
     private ProgramsViewModel viewModel;
+    private ProgramAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_programs);
+        ButterKnife.bind(this);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
-        RecyclerView recyclerView = findViewById(R.id.list);
+        viewModel = ViewModelProviders.of(this, viewModelFactory).get(ProgramsViewModel.class);
 
         setSupportActionBar(toolbar);
 
-        fab.setOnClickListener(view -> onButtonOpenClicked());
-
-        AppComponent appComponent = DaggerAppComponent.builder()
-                .application(getApplication())
-                .build();
-
-        ViewModelFactory viewModelFactory = appComponent.viewModelFactory();
-
-        viewModel = ViewModelProviders.of(this, viewModelFactory)
-                .get(ProgramsViewModel.class);
+        buttonOpen.setOnClickListener(view -> onButtonOpenClicked());
 
         viewModel.getProgramGroups().observe(this, programGroups -> {
             adapter = new ProgramAdapter(programGroups, this::onProgramClicked);

@@ -2,6 +2,7 @@ package com.pjanczyk.chip8emulator.ui.emulator;
 
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,12 +16,14 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.pjanczyk.chip8emulator.R;
-import com.pjanczyk.chip8emulator.di.AppComponent;
-import com.pjanczyk.chip8emulator.di.DaggerAppComponent;
-import com.pjanczyk.chip8emulator.di.ViewModelFactory;
 import com.trello.lifecycle2.android.lifecycle.AndroidLifecycle;
 import com.trello.rxlifecycle2.LifecycleProvider;
 
+import javax.inject.Inject;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import dagger.android.AndroidInjection;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 
 public class EmulatorActivity extends AppCompatActivity {
@@ -29,23 +32,24 @@ public class EmulatorActivity extends AppCompatActivity {
     private final LifecycleProvider<Lifecycle.Event> lifecycleProvider = AndroidLifecycle
             .createLifecycleProvider(this);
 
-    private EmulatorViewModel viewModel;
+    @Inject ViewModelProvider.Factory viewModelFactory;
 
-    private DisplayView displayView;
-    private KeyboardView keyboardView;
-    private AppBarLayout appBar;
-    private Toolbar toolbar;
+    @BindView(R.id.display) DisplayView displayView;
+    @BindView(R.id.keyboard) KeyboardView keyboardView;
+    @BindView(R.id.appbar) AppBarLayout appBar;
+    @BindView(R.id.toolbar) Toolbar toolbar;
+
+    private EmulatorViewModel viewModel;
 
     @SuppressLint("InlinedApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_emulator);
-        appBar = findViewById(R.id.appbar);
-        toolbar = findViewById(R.id.toolbar);
-        displayView = findViewById(R.id.display);
-        keyboardView = findViewById(R.id.keyboard);
+        ButterKnife.bind(this);
+
+        viewModel = ViewModelProviders.of(this, viewModelFactory).get(EmulatorViewModel.class);
 
         setSupportActionBar(toolbar);
         //noinspection ConstantConditions
@@ -54,13 +58,6 @@ public class EmulatorActivity extends AppCompatActivity {
         Intent intent = getIntent();
         int programId = intent.getIntExtra(EXTRA_PROGRAM_ID, 0);
 
-        AppComponent appComponent = DaggerAppComponent.builder()
-                .application(getApplication())
-                .build();
-
-        ViewModelFactory viewModelFactory = appComponent.viewModelFactory();
-
-        viewModel = ViewModelProviders.of(this, viewModelFactory).get(EmulatorViewModel.class);
         viewModel.getProgram().observe(this, program -> {
             setTitle(program.getName());
         });

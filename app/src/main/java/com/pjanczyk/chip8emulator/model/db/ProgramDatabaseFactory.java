@@ -15,11 +15,12 @@ import java.util.concurrent.Executors;
 import javax.inject.Inject;
 
 public class ProgramDatabaseFactory {
-    public final Application application;
-    public final BuiltInProgramsProvider builtInProgramsProvider;
+    private final Application application;
+    private final BuiltInProgramsProvider builtInProgramsProvider;
 
     @Inject
-    public ProgramDatabaseFactory(Application application, BuiltInProgramsProvider builtInProgramsProvider) {
+    public ProgramDatabaseFactory(Application application,
+                                  BuiltInProgramsProvider builtInProgramsProvider) {
         this.application = application;
         this.builtInProgramsProvider = builtInProgramsProvider;
     }
