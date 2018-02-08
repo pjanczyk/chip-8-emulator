@@ -65,6 +65,20 @@ public class Chip8VM {
         }
     }
 
+    public Chip8State saveState() {
+        synchronized (stateLock) {
+            assertStopped();
+            return core.saveState();
+        }
+    }
+
+    public void restoreState(Chip8State state) {
+        synchronized (stateLock) {
+            assertStopped();
+            core.restoreState(state);
+        }
+    }
+
     public void start() {
         synchronized (stateLock) {
             assertStopped();

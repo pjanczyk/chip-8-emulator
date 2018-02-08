@@ -2,6 +2,8 @@ package com.pjanczyk.chip8emulator.vm;
 
 import android.support.annotation.VisibleForTesting;
 
+import com.google.common.primitives.ImmutableIntArray;
+
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
@@ -32,11 +34,10 @@ class Chip8Core {
     @VisibleForTesting int[] V = new int[16]; // 8-bit registers
     @VisibleForTesting int I; // 24-bit register
     @VisibleForTesting int[] memory = new int[4096]; // 8-bit memory
-
+    @VisibleForTesting Deque<Integer> stack;
     @VisibleForTesting int delayTimer;
     @VisibleForTesting int soundTimer;
 
-    @VisibleForTesting Deque<Integer> stack;
     private Chip8Display display;
     private Chip8Keyboard keyboard;
 
@@ -62,6 +63,28 @@ class Chip8Core {
         for (int i = 0; i < program.length; i++) {
             memory[512 + i] = program[i] & 0xFF;
         }
+    }
+
+    public Chip8State saveState() {
+        return new Chip8State(
+                PC,
+                ImmutableIntArray.copyOf(V),
+                I,
+                ImmutableIntArray.copyOf(memory),
+                ImmutableIntArray.copyOf(stack),
+                delayTimer,
+                soundTimer
+        );
+    }
+
+    public void restoreState(Chip8State state) {
+        PC = state.PC;
+        V = state.V.toArray();
+        I = state.I;
+        memory = state.memory.toArray();
+        stack = new ArrayDeque<>(state.stack.asList());
+        delayTimer = state.delayTimer;
+        soundTimer = state.soundTimer;
     }
 
     public void decreaseTimers() {
@@ -111,138 +134,63 @@ class Chip8Core {
         switch (instr & 0xF000) {
             case 0x0000:
                 switch (instr) {
-                    case 0x00E0:
-                        op_00E0_CLS(instr);
-                        return true;
-                    case 0x00EE:
-                        op_00EE_RET(instr);
-                        return true;
-                    default:
-                        return false;
+                    case 0x00E0: op_00E0_CLS(instr); return true;
+                    case 0x00EE: op_00EE_RET(instr); return true;
+                    default: return false;
                 }
-            case 0x1000:
-                op_1nnn_JP(instr);
-                return true;
-            case 0x2000:
-                op_2nnn_CALL(instr);
-                return true;
-            case 0x3000:
-                op_3xnn_SE(instr);
-                return true;
-            case 0x4000:
-                op_4xnn_SNE(instr);
-                return true;
+            case 0x1000: op_1nnn_JP(instr); return true;
+            case 0x2000: op_2nnn_CALL(instr); return true;
+            case 0x3000: op_3xnn_SE(instr); return true;
+            case 0x4000: op_4xnn_SNE(instr); return true;
             case 0x5000:
                 switch (instr & 0x000F) {
-                    case 0x0:
-                        op_5xy0_SE(instr);
-                        return true;
-                    default:
-                        return false;
+                    case 0x0: op_5xy0_SE(instr); return true;
+                    default: return false;
                 }
-            case 0x6000:
-                op_6xnn_LD(instr);
-                return true;
-            case 0x7000:
-                op_7xnn_ADD(instr);
-                return true;
+            case 0x6000: op_6xnn_LD(instr); return true;
+            case 0x7000: op_7xnn_ADD(instr); return true;
             case 0x8000:
                 switch (instr & 0x000F) {
-                    case 0x0:
-                        op_8xy0_LD(instr);
-                        return true;
-                    case 0x1:
-                        op_8xy1_OR(instr);
-                        return true;
-                    case 0x2:
-                        op_8xy2_AND(instr);
-                        return true;
-                    case 0x3:
-                        op_8xy3_XOR(instr);
-                        return true;
-                    case 0x4:
-                        op_8xy4_ADD(instr);
-                        return true;
-                    case 0x5:
-                        op_8xy5_SUB(instr);
-                        return true;
-                    case 0x6:
-                        op_8xy6_SHR(instr);
-                        return true;
-                    case 0x7:
-                        op_8xy7_SUBN(instr);
-                        return true;
-                    case 0xE:
-                        op_8xyE_SHL(instr);
-                        return true;
-                    default:
-                        return false;
+                    case 0x0: op_8xy0_LD(instr); return true;
+                    case 0x1: op_8xy1_OR(instr); return true;
+                    case 0x2: op_8xy2_AND(instr); return true;
+                    case 0x3: op_8xy3_XOR(instr); return true;
+                    case 0x4: op_8xy4_ADD(instr); return true;
+                    case 0x5: op_8xy5_SUB(instr); return true;
+                    case 0x6: op_8xy6_SHR(instr); return true;
+                    case 0x7: op_8xy7_SUBN(instr); return true;
+                    case 0xE: op_8xyE_SHL(instr); return true;
+                    default: return false;
                 }
             case 0x9000:
                 switch (instr & 0x000F) {
-                    case 0x0:
-                        op_9xy0_SNE(instr);
-                        return true;
-                    default:
-                        return false;
+                    case 0x0: op_9xy0_SNE(instr); return true;
+                    default: return false;
                 }
-            case 0xA000:
-                op_Annn_LD(instr);
-                return true;
-            case 0xB000:
-                op_Bnnn_JP(instr);
-                return true;
-            case 0xC000:
-                op_Cxnn_RND(instr);
-                return true;
-            case 0xD000:
-                op_Dxyn_DRW(instr);
-                return true;
+            case 0xA000: op_Annn_LD(instr); return true;
+            case 0xB000: op_Bnnn_JP(instr); return true;
+            case 0xC000: op_Cxnn_RND(instr); return true;
+            case 0xD000: op_Dxyn_DRW(instr); return true;
             case 0xE000:
                 switch (instr & 0x00FF) {
-                    case 0x9E:
-                        op_Ex9E_SKP(instr);
-                        return true;
-                    case 0xA1:
-                        op_ExA1_SKNP(instr);
-                        return true;
-                    default:
-                        return false;
+                    case 0x9E: op_Ex9E_SKP(instr); return true;
+                    case 0xA1: op_ExA1_SKNP(instr); return true;
+                    default: return false;
                 }
             case 0xF000:
                 switch (instr & 0x00FF) {
-                    case 0x07:
-                        op_Fx07_LD(instr);
-                        return true;
-                    case 0x0A:
-                        op_Fx0A_LD(instr);
-                        return true;
-                    case 0x15:
-                        op_Fx15_LD(instr);
-                        return true;
-                    case 0x18:
-                        op_Fx18_ST(instr);
-                        return true;
-                    case 0x1E:
-                        op_Fx1E_ADD(instr);
-                        return true;
-                    case 0x29:
-                        op_Fx29_LD(instr);
-                        return true;
-                    case 0x33:
-                        op_Fx33_LD(instr);
-                        return true;
-                    case 0x55:
-                        op_Fx55_LD(instr);
-                        return true;
-                    case 0x65:
-                        op_Fx65_LD(instr);
-                        return true;
-                    default:
-                        return false;
+                    case 0x07: op_Fx07_LD(instr); return true;
+                    case 0x0A: op_Fx0A_LD(instr); return true;
+                    case 0x15: op_Fx15_LD(instr); return true;
+                    case 0x18: op_Fx18_ST(instr); return true;
+                    case 0x1E: op_Fx1E_ADD(instr); return true;
+                    case 0x29: op_Fx29_LD(instr); return true;
+                    case 0x33: op_Fx33_LD(instr); return true;
+                    case 0x55: op_Fx55_LD(instr); return true;
+                    case 0x65: op_Fx65_LD(instr); return true;
+                    default: return false;
                 }
-            default:
-                return false;
+            default: return false;
         }
     }
     // @formatter:on
