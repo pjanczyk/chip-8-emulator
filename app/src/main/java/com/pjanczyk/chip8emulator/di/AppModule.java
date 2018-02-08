@@ -19,6 +19,7 @@ import dagger.Provides;
 import dagger.android.ContributesAndroidInjector;
 import dagger.multibindings.IntoMap;
 
+@SuppressWarnings("unused")
 @Module
 abstract class AppModule {
     @ContributesAndroidInjector

@@ -1,5 +1,7 @@
 package com.pjanczyk.chip8emulator.vm;
 
+import android.support.annotation.VisibleForTesting;
+
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
@@ -26,18 +28,17 @@ class Chip8Core {
     };
     private static final Random RANDOM_GENERATOR = new Random();
 
-    int PC = 0; // 24-bit program counter
-    int[] V = new int[16]; // 8-bit registers
-    int I; // 24-bit register
-    int[] memory = new int[4096]; // 8-bit memory
+    @VisibleForTesting int PC = 0; // 24-bit program counter
+    @VisibleForTesting int[] V = new int[16]; // 8-bit registers
+    @VisibleForTesting int I; // 24-bit register
+    @VisibleForTesting int[] memory = new int[4096]; // 8-bit memory
 
-    int delayTimer;
-    int soundTimer;
+    @VisibleForTesting int delayTimer;
+    @VisibleForTesting int soundTimer;
 
-    // stack
-    Deque<Integer> stack;
-    Chip8Display display;
-    Chip8Keyboard keyboard;
+    @VisibleForTesting Deque<Integer> stack;
+    private Chip8Display display;
+    private Chip8Keyboard keyboard;
 
     Chip8Core(Chip8Display display, Chip8Keyboard keyboard) {
         this.display = display;
@@ -106,7 +107,7 @@ class Chip8Core {
     }
 
     // @formatter:off
-    boolean executeInstruction(int instr) throws Chip8EmulationException {
+    @VisibleForTesting boolean executeInstruction(int instr) throws Chip8EmulationException {
         switch (instr & 0xF000) {
             case 0x0000:
                 switch (instr) {
