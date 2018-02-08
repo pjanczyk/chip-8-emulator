@@ -1,12 +1,12 @@
-package com.pjanczyk.chip8emulator.model.db;
+package com.pjanczyk.chip8emulator.data.source.db;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
-import com.pjanczyk.chip8emulator.model.Program;
-import com.pjanczyk.chip8emulator.model.ProgramInfo;
+import com.pjanczyk.chip8emulator.data.Program;
+import com.pjanczyk.chip8emulator.data.ProgramInfo;
 
 import java.util.Date;
 import java.util.List;

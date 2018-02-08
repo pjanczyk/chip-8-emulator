@@ -1,6 +1,6 @@
 package com.pjanczyk.chip8emulator.ui.programs;
 
-import com.pjanczyk.chip8emulator.model.ProgramInfo;
+import com.pjanczyk.chip8emulator.data.ProgramInfo;
 
 import java.util.List;
 

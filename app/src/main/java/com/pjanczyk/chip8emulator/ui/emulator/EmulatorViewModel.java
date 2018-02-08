@@ -6,8 +6,8 @@ import android.arch.lifecycle.ViewModel;
 import android.support.annotation.AnyThread;
 import android.support.annotation.MainThread;
 
-import com.pjanczyk.chip8emulator.model.Program;
-import com.pjanczyk.chip8emulator.model.repository.ProgramRepository;
+import com.pjanczyk.chip8emulator.data.Program;
+import com.pjanczyk.chip8emulator.data.source.ProgramRepository;
 import com.pjanczyk.chip8emulator.vm.Chip8EmulationException;
 import com.pjanczyk.chip8emulator.vm.Chip8KeyboardInput;
 import com.pjanczyk.chip8emulator.vm.Chip8ReadOnlyDisplay;

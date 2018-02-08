@@ -1,10 +1,10 @@
-package com.pjanczyk.chip8emulator.model;
+package com.pjanczyk.chip8emulator.data.source.xml;
 
 import android.app.Application;
 
 import com.annimon.stream.Stream;
 import com.google.common.io.ByteStreams;
-import com.pjanczyk.chip8emulator.model.xml.BuiltInProgramList;
+import com.pjanczyk.chip8emulator.data.Program;
 
 import org.simpleframework.xml.core.Persister;
 

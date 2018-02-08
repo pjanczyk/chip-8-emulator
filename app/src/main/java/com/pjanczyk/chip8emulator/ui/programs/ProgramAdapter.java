@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.pjanczyk.chip8emulator.R;
-import com.pjanczyk.chip8emulator.model.ProgramInfo;
+import com.pjanczyk.chip8emulator.data.ProgramInfo;
 
 import java.util.ArrayList;
 import java.util.List;

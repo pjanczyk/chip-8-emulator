@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 import com.google.common.io.ByteStreams;
 import com.pjanczyk.chip8emulator.R;
-import com.pjanczyk.chip8emulator.model.ProgramInfo;
+import com.pjanczyk.chip8emulator.data.ProgramInfo;
 import com.pjanczyk.chip8emulator.ui.emulator.EmulatorActivity;
 
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package com.pjanczyk.chip8emulator.model.xml;
+package com.pjanczyk.chip8emulator.data.source.xml;
 
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;

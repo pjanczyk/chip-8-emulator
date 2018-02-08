@@ -1,10 +1,10 @@
-package com.pjanczyk.chip8emulator.model.db;
+package com.pjanczyk.chip8emulator.data.source.db;
 
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.RoomDatabase;
 import android.arch.persistence.room.TypeConverters;
 
-import com.pjanczyk.chip8emulator.model.Program;
+import com.pjanczyk.chip8emulator.data.Program;
 
 @Database(entities = {Program.class}, version = 1)
 @TypeConverters({DateConverter.class})

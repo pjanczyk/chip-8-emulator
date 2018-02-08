@@ -5,8 +5,8 @@ import android.arch.lifecycle.LiveDataReactiveStreams;
 import android.arch.lifecycle.ViewModel;
 
 import com.google.common.collect.ImmutableList;
-import com.pjanczyk.chip8emulator.model.Program;
-import com.pjanczyk.chip8emulator.model.repository.ProgramRepository;
+import com.pjanczyk.chip8emulator.data.Program;
+import com.pjanczyk.chip8emulator.data.source.ProgramRepository;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.pjanczyk.chip8emulator.model.db;
+package com.pjanczyk.chip8emulator.data.source.db;
 
 import android.arch.persistence.room.TypeConverter;
 

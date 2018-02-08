@@ -1,4 +1,4 @@
-package com.pjanczyk.chip8emulator.model.db;
+package com.pjanczyk.chip8emulator.data.source.db;
 
 import android.app.Application;
 import android.arch.persistence.db.SupportSQLiteDatabase;
@@ -6,8 +6,8 @@ import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.support.annotation.NonNull;
 
-import com.pjanczyk.chip8emulator.model.BuiltInProgramsProvider;
-import com.pjanczyk.chip8emulator.model.Program;
+import com.pjanczyk.chip8emulator.data.source.xml.BuiltInProgramsProvider;
+import com.pjanczyk.chip8emulator.data.Program;
 
 import java.util.List;
 import java.util.concurrent.Executors;

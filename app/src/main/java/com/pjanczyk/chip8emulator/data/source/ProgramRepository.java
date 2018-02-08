@@ -1,8 +1,8 @@
-package com.pjanczyk.chip8emulator.model.repository;
+package com.pjanczyk.chip8emulator.data.source;
 
-import com.pjanczyk.chip8emulator.model.Program;
-import com.pjanczyk.chip8emulator.model.ProgramInfo;
-import com.pjanczyk.chip8emulator.model.db.ProgramDao;
+import com.pjanczyk.chip8emulator.data.Program;
+import com.pjanczyk.chip8emulator.data.ProgramInfo;
+import com.pjanczyk.chip8emulator.data.source.db.ProgramDao;
 
 import java.util.Date;
 import java.util.List;

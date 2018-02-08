@@ -3,9 +3,9 @@ package com.pjanczyk.chip8emulator.di;
 import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProvider;
 
-import com.pjanczyk.chip8emulator.model.db.ProgramDao;
-import com.pjanczyk.chip8emulator.model.db.ProgramDatabase;
-import com.pjanczyk.chip8emulator.model.db.ProgramDatabaseFactory;
+import com.pjanczyk.chip8emulator.data.source.db.ProgramDao;
+import com.pjanczyk.chip8emulator.data.source.db.ProgramDatabase;
+import com.pjanczyk.chip8emulator.data.source.db.ProgramDatabaseFactory;
 import com.pjanczyk.chip8emulator.ui.emulator.EmulatorActivity;
 import com.pjanczyk.chip8emulator.ui.emulator.EmulatorViewModel;
 import com.pjanczyk.chip8emulator.ui.programs.ProgramsActivity;
