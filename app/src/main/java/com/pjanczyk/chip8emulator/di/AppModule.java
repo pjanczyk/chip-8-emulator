@@ -6,6 +6,7 @@ import android.arch.lifecycle.ViewModelProvider;
 import com.pjanczyk.chip8emulator.data.source.db.ProgramDao;
 import com.pjanczyk.chip8emulator.data.source.db.ProgramDatabase;
 import com.pjanczyk.chip8emulator.data.source.db.ProgramDatabaseFactory;
+import com.pjanczyk.chip8emulator.data.source.db.SaveDao;
 import com.pjanczyk.chip8emulator.ui.emulator.EmulatorActivity;
 import com.pjanczyk.chip8emulator.ui.emulator.EmulatorViewModel;
 import com.pjanczyk.chip8emulator.ui.programs.ProgramsActivity;
@@ -44,6 +45,11 @@ abstract class AppModule {
     @Singleton @Provides
     static ProgramDao provideProgramDao(ProgramDatabase database) {
         return database.programDao();
+    }
+
+    @Singleton @Provides
+    static SaveDao provideSaveDao(ProgramDatabase database) {
+        return database.saveDao();
     }
 
     @Singleton @Provides

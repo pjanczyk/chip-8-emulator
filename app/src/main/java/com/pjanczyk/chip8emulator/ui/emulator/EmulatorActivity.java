@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.arch.lifecycle.Lifecycle;
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.NavUtils;
@@ -55,8 +54,8 @@ public class EmulatorActivity extends AppCompatActivity {
         //noinspection ConstantConditions
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        Intent intent = getIntent();
-        int programId = intent.getIntExtra(EXTRA_PROGRAM_ID, 0);
+        int programId = getIntent().getIntExtra(EXTRA_PROGRAM_ID, 0);
+        viewModel.init(programId);
 
         viewModel.getProgram().observe(this, program -> {
             setTitle(program.getName());
@@ -101,8 +100,12 @@ public class EmulatorActivity extends AppCompatActivity {
         keyboardView.setKeyListener((key, pressed) -> {
             viewModel.getKeyboard().setKeyPressed(key, pressed);
         });
+    }
 
-        viewModel.init(programId);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        viewModel.resume();
     }
 
     @Override
