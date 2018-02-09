@@ -51,8 +51,10 @@ public class EmulatorActivity extends AppCompatActivity {
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(EmulatorViewModel.class);
 
         setSupportActionBar(toolbar);
-        //noinspection ConstantConditions
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationIcon(R.drawable.ic_close_white_24dp);
+        toolbar.setNavigationOnClickListener(v -> {
+            this.onBackPressed();
+        });
 
         int programId = getIntent().getIntExtra(EXTRA_PROGRAM_ID, 0);
         viewModel.init(programId);
