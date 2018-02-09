@@ -18,9 +18,9 @@
             android:layout_marginEnd="4dp"
             android:layout_marginStart="4dp"
             android:layout_marginTop="4dp"
+            android:background="#212121"
             android:elevation="4dp"
             android:padding="2dp"
-            android:background="#212121"
             app:layout_constraintBottom_toTopOf="@+id/frameLayout2"
             app:layout_constraintDimensionRatio="h,2:1"
             app:layout_constraintEnd_toEndOf="parent"
@@ -33,6 +33,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:keepScreenOn="true" />
+
+            <ImageButton
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:background="?attr/selectableItemBackground"
+                android:elevation="4dp"
+                android:src="@drawable/ic_pause_white_48dp" />
 
         </FrameLayout>
 
@@ -79,5 +87,56 @@
         </android.support.design.widget.AppBarLayout>
 
     </FrameLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom">
+
+        <Button
+            android:id="@+id/button_restart"
+            style="@style/ButtonTextAndImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableTop="@drawable/ic_replay_white_24dp"
+            android:text="@string/restart"
+            app:layout_constraintEnd_toStartOf="@+id/button_quick_save"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/button_quick_save"
+            style="@style/ButtonTextAndImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableTop="@drawable/ic_save_white_24dp"
+            android:text="@string/quick_save"
+            app:layout_constraintEnd_toStartOf="@+id/button_quick_restore"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/button_restart" />
+
+        <Button
+            android:id="@+id/button_quick_restore"
+            style="@style/ButtonTextAndImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableTop="@drawable/ic_restore_white_24dp"
+            android:text="@string/quick_restore"
+            app:layout_constraintEnd_toStartOf="@+id/button_options"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/button_quick_save" />
+
+        <Button
+            android:id="@+id/button_options"
+            style="@style/ButtonTextAndImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableTop="@drawable/ic_tune_white_24dp"
+            android:text="@string/options"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/button_quick_restore" />
+
+    </android.support.constraint.ConstraintLayout>
 
 </FrameLayout>

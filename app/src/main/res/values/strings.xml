@@ -95,4 +95,8 @@
     <string name="title_activity_emulator">EmulatorActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="quick_save">Quick save</string>
+    <string name="quick_restore">Quick restore</string>
+    <string name="options">Options</string>
+    <string name="restart">Restart</string>
 </resources>
