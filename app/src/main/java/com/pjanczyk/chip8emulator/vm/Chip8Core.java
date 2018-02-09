@@ -73,7 +73,8 @@ class Chip8Core {
                 ImmutableIntArray.copyOf(memory),
                 ImmutableIntArray.copyOf(stack),
                 delayTimer,
-                soundTimer
+                soundTimer,
+                display.getState()
         );
     }
 
@@ -85,6 +86,7 @@ class Chip8Core {
         stack = new ArrayDeque<>(state.stack.asList());
         delayTimer = state.delayTimer;
         soundTimer = state.soundTimer;
+        display.restoreState(state.display);
     }
 
     public void decreaseTimers() {

@@ -1,6 +1,7 @@
 package com.pjanczyk.chip8emulator.vm;
 
 import com.google.common.primitives.ImmutableIntArray;
+import com.pjanczyk.chip8emulator.util.ImmutableBooleanArray;
 
 import static com.pjanczyk.chip8emulator.util.IntSizeUtil.require24Bit;
 import static com.pjanczyk.chip8emulator.util.IntSizeUtil.require8Bit;
@@ -12,7 +13,7 @@ public class Chip8State {
     public final ImmutableIntArray V;
     /* Register, 24-bit */
     public final int I;
-    /* Memory -- 4096 x 8-bit */
+    /* Memory, 4096 x 8-bit */
     public final ImmutableIntArray memory;
     /* Stack, variable size x 24-bit */
     public final ImmutableIntArray stack;
@@ -20,6 +21,8 @@ public class Chip8State {
     public final int delayTimer;
     /* Sound timer TODO: size */
     public final int soundTimer;
+    /* Display, 2048 x 1-bit */
+    public final ImmutableBooleanArray display;
 
     public Chip8State(int PC,
                       ImmutableIntArray V,
@@ -27,8 +30,8 @@ public class Chip8State {
                       ImmutableIntArray memory,
                       ImmutableIntArray stack,
                       int delayTimer,
-                      int soundTimer) {
-
+                      int soundTimer,
+                      ImmutableBooleanArray display) {
         this.PC = require24Bit(PC, "PC is not 24-bit");
 
         if (V.length() != 16) throw new IllegalArgumentException("V.length != 16");
@@ -48,5 +51,8 @@ public class Chip8State {
         this.stack = stack;
         this.delayTimer = delayTimer; // TODO: size check
         this.soundTimer = soundTimer; // TODO: size check
+
+        if (display.length() != 2048) throw new IllegalArgumentException("display.length != 2048");
+        this.display = display;
     }
 }

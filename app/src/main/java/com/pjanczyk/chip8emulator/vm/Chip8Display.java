@@ -1,5 +1,7 @@
 package com.pjanczyk.chip8emulator.vm;
 
+import com.pjanczyk.chip8emulator.util.ImmutableBooleanArray;
+
 import java.util.Arrays;
 
 class Chip8Display implements Chip8ReadOnlyDisplay {
@@ -35,5 +37,13 @@ class Chip8Display implements Chip8ReadOnlyDisplay {
 
     public void clear() {
         Arrays.fill(data, false);
+    }
+
+    public ImmutableBooleanArray getState() {
+        return ImmutableBooleanArray.copyOf(data);
+    }
+
+    public void restoreState(ImmutableBooleanArray state) {
+        System.arraycopy(state.toArray(), 0, data, 0, data.length);
     }
 }
