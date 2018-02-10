@@ -12,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.pjanczyk.chip8emulator.R;
@@ -37,6 +38,10 @@ public class EmulatorActivity extends AppCompatActivity {
     @BindView(R.id.keyboard) KeyboardView keyboardView;
     @BindView(R.id.appbar) AppBarLayout appBar;
     @BindView(R.id.toolbar) Toolbar toolbar;
+    @BindView(R.id.button_restart) Button buttonRestart;
+    @BindView(R.id.button_quick_save) Button buttonQuickSave;
+    @BindView(R.id.button_quick_restore) Button buttonQuickRestore;
+    @BindView(R.id.button_options) Button buttonOptions;
 
     private EmulatorViewModel viewModel;
 
@@ -60,7 +65,7 @@ public class EmulatorActivity extends AppCompatActivity {
         viewModel.init(programId);
 
         viewModel.getProgram().observe(this, program -> {
-            setTitle(program.getName());
+            setTitle(program.name);
         });
 
         viewModel.getIsRunning().observe(this, isRunning -> {
@@ -95,13 +100,16 @@ public class EmulatorActivity extends AppCompatActivity {
                     this.finish();
                 });
 
-        displayView.setOnClickListener(view -> {
-            viewModel.toggle();
-        });
+        displayView.setOnClickListener(view -> viewModel.toggle());
 
         keyboardView.setKeyListener((key, pressed) -> {
             viewModel.getKeyboard().setKeyPressed(key, pressed);
         });
+
+        buttonRestart.setOnClickListener(v -> viewModel.restart());
+        buttonQuickSave.setOnClickListener(v -> viewModel.quickSave());
+        buttonQuickRestore.setOnClickListener(v -> viewModel.quickRestore());
+        buttonOptions.setOnClickListener(v -> viewModel.options());
     }
 
     @Override

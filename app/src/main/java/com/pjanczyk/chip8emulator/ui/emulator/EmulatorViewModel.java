@@ -1,21 +1,17 @@
 package com.pjanczyk.chip8emulator.ui.emulator;
 
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.LiveDataReactiveStreams;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 import android.support.annotation.AnyThread;
 import android.support.annotation.MainThread;
 
 import com.pjanczyk.chip8emulator.data.Program;
-import com.pjanczyk.chip8emulator.data.SaveInfo;
 import com.pjanczyk.chip8emulator.data.source.ProgramRepository;
 import com.pjanczyk.chip8emulator.vm.Chip8EmulationException;
 import com.pjanczyk.chip8emulator.vm.Chip8KeyboardInput;
 import com.pjanczyk.chip8emulator.vm.Chip8ReadOnlyDisplay;
 import com.pjanczyk.chip8emulator.vm.Chip8VM;
-
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -33,7 +29,6 @@ public class EmulatorViewModel extends ViewModel {
     private final MutableLiveData<Boolean> isRunning = new MutableLiveData<>();
     private final MutableLiveData<Chip8ReadOnlyDisplay> display = new MutableLiveData<>();
     private final PublishSubject<Chip8EmulationException> emulationError = PublishSubject.create();
-    private LiveData<List<SaveInfo>> saves;
 
     private boolean initialized = false;
     private Chip8VM vm;
@@ -64,16 +59,10 @@ public class EmulatorViewModel extends ViewModel {
         return emulationError;
     }
 
-    public LiveData<List<SaveInfo>> getSaves() {
-        return saves;
-    }
-
     @MainThread
     public void init(int programId) {
         if (initialized) return;
         initialized = true;
-
-        saves = LiveDataReactiveStreams.fromPublisher(repository.getSavesOfProgram(programId));
 
         Disposable disposable = repository.getProgram(programId)
                 .subscribeOn(Schedulers.io())
@@ -87,7 +76,7 @@ public class EmulatorViewModel extends ViewModel {
                     // vm.setClockPeriods(1_000_000_000 / 20, 1_000_000_000 / 2);
 
                     vm.setListener(new VMListener());
-                    vm.loadProgram(prog.getBytecode());
+                    vm.loadProgram(prog.bytecode);
                 });
         compositeDisposable.add(disposable);
     }
@@ -115,6 +104,29 @@ public class EmulatorViewModel extends ViewModel {
         } else {
             resume();
         }
+    }
+
+    @MainThread
+    public void restart() {
+        if (vm.isRunning()) {
+            vm.stop();
+        }
+        vm.clearMemory();
+        vm.loadProgram(program.getValue().bytecode);
+        vm.start();
+    }
+
+    @MainThread
+    public void quickSave() {
+    }
+
+    @MainThread
+    public void quickRestore() {
+    }
+
+    @MainThread
+    public void options() {
+
     }
 
     @Override

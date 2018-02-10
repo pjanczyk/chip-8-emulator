@@ -3,6 +3,8 @@ package com.pjanczyk.chip8emulator.data;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.util.Date;
 
@@ -13,18 +15,30 @@ import java.util.Date;
 })
 public class Program {
     @PrimaryKey(autoGenerate = true)
-    private final int id;
-    private final String name;
-    private final boolean isBuiltIn;
-    private final String author;
-    private final String releaseDate;
-    private final String description;
-    private final byte[] bytecode;
-    private final Date lastOpenedAt;
+    public final Integer id;
+    @NonNull
+    public final String name;
+    @NonNull
+    public final boolean isBuiltIn;
+    @Nullable
+    public final String author;
+    @Nullable
+    public final String releaseDate;
+    @Nullable
+    public final String description;
+    @NonNull
+    public final byte[] bytecode;
+    @Nullable
+    public final Date lastOpenedAt;
 
-    public Program(int id, String name, boolean isBuiltIn,
-                   String author, String releaseDate, String description,
-                   byte[] bytecode, Date lastOpenedAt) {
+    public Program(Integer id,
+                   @NonNull String name,
+                   boolean isBuiltIn,
+                   @Nullable String author,
+                   @Nullable String releaseDate,
+                   @Nullable String description,
+                   @NonNull byte[] bytecode,
+                   @Nullable Date lastOpenedAt) {
         this.id = id;
         this.name = name;
         this.isBuiltIn = isBuiltIn;
@@ -33,37 +47,5 @@ public class Program {
         this.description = description;
         this.bytecode = bytecode;
         this.lastOpenedAt = lastOpenedAt;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean isBuiltIn() {
-        return isBuiltIn;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public String getReleaseDate() {
-        return releaseDate;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public byte[] getBytecode() {
-        return bytecode;
-    }
-
-    public Date getLastOpenedAt() {
-        return lastOpenedAt;
     }
 }
