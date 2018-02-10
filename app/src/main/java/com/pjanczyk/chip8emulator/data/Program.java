@@ -6,6 +6,8 @@ import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.pjanczyk.chip8emulator.vm.Chip8State;
+
 import java.util.Date;
 
 @Entity(indices = {
@@ -30,6 +32,8 @@ public class Program {
     public final byte[] bytecode;
     @Nullable
     public final Date lastOpenedAt;
+    @Nullable
+    public final Chip8State quickSave;
 
     public Program(Integer id,
                    @NonNull String name,
@@ -38,7 +42,8 @@ public class Program {
                    @Nullable String releaseDate,
                    @Nullable String description,
                    @NonNull byte[] bytecode,
-                   @Nullable Date lastOpenedAt) {
+                   @Nullable Date lastOpenedAt,
+                   @Nullable Chip8State quickSave) {
         this.id = id;
         this.name = name;
         this.isBuiltIn = isBuiltIn;
@@ -47,5 +52,6 @@ public class Program {
         this.description = description;
         this.bytecode = bytecode;
         this.lastOpenedAt = lastOpenedAt;
+        this.quickSave = quickSave;
     }
 }

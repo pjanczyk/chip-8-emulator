@@ -2,7 +2,11 @@ package com.pjanczyk.chip8emulator.vm;
 
 import android.support.annotation.VisibleForTesting;
 
-import com.google.common.primitives.ImmutableIntArray;
+import com.annimon.stream.Collectors;
+import com.annimon.stream.IntStream;
+import com.annimon.stream.Stream;
+import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Booleans;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -30,13 +34,13 @@ class Chip8Core {
     };
     private static final Random RANDOM_GENERATOR = new Random();
 
-    @VisibleForTesting int PC = 0; // 24-bit program counter
+    @VisibleForTesting int PC = 0; // 16-bit program counter
     @VisibleForTesting int[] V = new int[16]; // 8-bit registers
-    @VisibleForTesting int I; // 24-bit register
+    @VisibleForTesting int I; // 16-bit register
     @VisibleForTesting int[] memory = new int[4096]; // 8-bit memory
-    @VisibleForTesting Deque<Integer> stack;
-    @VisibleForTesting int delayTimer;
-    @VisibleForTesting int soundTimer;
+    @VisibleForTesting Deque<Integer> stack; // variable-sized 16-bit stack
+    @VisibleForTesting int delayTimer; // 8-bit
+    @VisibleForTesting int soundTimer; // 8-bit
 
     private Chip8Display display;
     private Chip8Keyboard keyboard;
@@ -67,26 +71,27 @@ class Chip8Core {
 
     public Chip8State saveState() {
         return new Chip8State(
-                PC,
-                ImmutableIntArray.copyOf(V),
-                I,
-                ImmutableIntArray.copyOf(memory),
-                ImmutableIntArray.copyOf(stack),
-                delayTimer,
-                soundTimer,
-                display.getState()
+                (short) PC,
+                ImmutableList.copyOf(IntStream.of(V).mapToObj(e -> (byte) e).iterator()),
+                (short) I,
+                ImmutableList.copyOf(IntStream.of(memory).mapToObj(e -> (byte) e).iterator()),
+                ImmutableList.copyOf(Stream.of(stack).map(Integer::shortValue).iterator()),
+                (byte) delayTimer,
+                (byte) soundTimer,
+                ImmutableList.copyOf(Booleans.asList(display.getState()))
         );
     }
 
     public void restoreState(Chip8State state) {
         PC = state.PC;
-        V = state.V.toArray();
+        V = Stream.of(state.V).mapToInt(e -> (int) e).toArray();
         I = state.I;
-        memory = state.memory.toArray();
-        stack = new ArrayDeque<>(state.stack.asList());
+        memory = Stream.of(state.V).mapToInt(e -> (int) e).toArray();
+        stack = Stream.of(state.stack).map(e -> (int) e)
+                .collect(Collectors.toCollection(ArrayDeque::new));
         delayTimer = state.delayTimer;
         soundTimer = state.soundTimer;
-        display.restoreState(state.display);
+        display.restoreState(Booleans.toArray(state.display));
     }
 
     public void decreaseTimers() {

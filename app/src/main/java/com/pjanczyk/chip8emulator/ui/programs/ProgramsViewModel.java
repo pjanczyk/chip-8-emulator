@@ -39,8 +39,8 @@ public class ProgramsViewModel extends ViewModel {
     }
 
     public void addImportedProgram(String name, byte[] bytecode) {
-        Program program = new Program(0, name, false, null, null,
-                null, bytecode, null);
+        Program program = new Program(null, name, false, null, null,
+                null, bytecode, null, null);
 
         repository.addProgram(program);
     }

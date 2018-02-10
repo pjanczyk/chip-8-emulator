@@ -1,58 +1,57 @@
 package com.pjanczyk.chip8emulator.vm;
 
-import com.google.common.primitives.ImmutableIntArray;
-import com.pjanczyk.chip8emulator.util.ImmutableBooleanArray;
+import android.support.annotation.Size;
 
-import static com.pjanczyk.chip8emulator.util.IntSizeUtil.require24Bit;
-import static com.pjanczyk.chip8emulator.util.IntSizeUtil.require8Bit;
+import com.google.common.collect.ImmutableList;
 
 public class Chip8State {
-    /* Program counter, 24-bit */
-    public final int PC;
+    public static final int V_SIZE = 16;
+    public static final int MEMORY_SIZE = 4096;
+    public static final int DISPLAY_SIZE = 2048;
+
+    /* Program counter, 16-bit */
+    public final short PC;
     /* Registers, 16 x 8-bit */
-    public final ImmutableIntArray V;
-    /* Register, 24-bit */
-    public final int I;
+    public final @Size(V_SIZE) ImmutableList<Byte> V;
+    /* Register, 16-bit */
+    public final short I;
     /* Memory, 4096 x 8-bit */
-    public final ImmutableIntArray memory;
-    /* Stack, variable size x 24-bit */
-    public final ImmutableIntArray stack;
-    /* Delay timer TODO: size */
-    public final int delayTimer;
-    /* Sound timer TODO: size */
-    public final int soundTimer;
+    public final @Size(MEMORY_SIZE) ImmutableList<Byte> memory;
+    /* Stack, variable size x 16-bit */
+    public final ImmutableList<Short> stack;
+    /* Delay timer, 8-bit */
+    public final byte delayTimer;
+    /* Sound timer, 8-bit */
+    public final byte soundTimer;
     /* Display, 2048 x 1-bit */
-    public final ImmutableBooleanArray display;
+    public final @Size(DISPLAY_SIZE) ImmutableList<Boolean> display;
 
-    public Chip8State(int PC,
-                      ImmutableIntArray V,
-                      int I,
-                      ImmutableIntArray memory,
-                      ImmutableIntArray stack,
-                      int delayTimer,
-                      int soundTimer,
-                      ImmutableBooleanArray display) {
-        this.PC = require24Bit(PC, "PC is not 24-bit");
+    public Chip8State(short PC,
+                      @Size(V_SIZE) ImmutableList<Byte> V,
+                      short I,
+                      @Size(MEMORY_SIZE) ImmutableList<Byte> memory,
+                      ImmutableList<Short> stack,
+                      byte delayTimer,
+                      byte soundTimer,
+                      @Size(DISPLAY_SIZE) ImmutableList<Boolean> display) {
 
-        if (V.length() != 16) throw new IllegalArgumentException("V.length != 16");
-        for (int i = 0; i < V.length(); i++) {
-            require8Bit(V.get(i), "V is not 8-bit array");
+        if (V.size() != V_SIZE) {
+            throw new IllegalArgumentException("V..size() != " + V_SIZE);
         }
+        if (memory.size() != MEMORY_SIZE) {
+            throw new IllegalArgumentException("memory.size() != " + MEMORY_SIZE);
+        }
+        if (display.size() != DISPLAY_SIZE) {
+            throw new IllegalArgumentException("display.size() != " + DISPLAY_SIZE);
+        }
+
+        this.PC = PC;
         this.V = V;
-
-        this.I = require24Bit(I, "I is not 24-bit");
-
-        if (memory.length() != 4096) throw new IllegalArgumentException("memory.length != 4096");
-        for (int i = 0; i < memory.length(); i++) {
-            require8Bit(memory.get(i), "memory is not 8-bit array");
-        }
+        this.I = I;
         this.memory = memory;
-
         this.stack = stack;
-        this.delayTimer = delayTimer; // TODO: size check
-        this.soundTimer = soundTimer; // TODO: size check
-
-        if (display.length() != 2048) throw new IllegalArgumentException("display.length != 2048");
+        this.delayTimer = delayTimer;
+        this.soundTimer = soundTimer;
         this.display = display;
     }
 }

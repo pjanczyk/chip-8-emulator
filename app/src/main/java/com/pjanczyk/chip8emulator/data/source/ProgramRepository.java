@@ -2,9 +2,7 @@ package com.pjanczyk.chip8emulator.data.source;
 
 import com.pjanczyk.chip8emulator.data.Program;
 import com.pjanczyk.chip8emulator.data.ProgramInfo;
-import com.pjanczyk.chip8emulator.data.Save;
 import com.pjanczyk.chip8emulator.data.source.db.ProgramDao;
-import com.pjanczyk.chip8emulator.data.source.db.SaveDao;
 
 import java.util.Date;
 import java.util.List;
@@ -18,12 +16,10 @@ import io.reactivex.Maybe;
 @Singleton
 public class ProgramRepository {
     private final ProgramDao programDao;
-    private final SaveDao saveDao;
 
     @Inject
-    public ProgramRepository(ProgramDao programDao, SaveDao saveDao) {
+    public ProgramRepository(ProgramDao programDao) {
         this.programDao = programDao;
-        this.saveDao = saveDao;
     }
 
     public Flowable<List<ProgramInfo>> getBuiltInPrograms() {
@@ -44,9 +40,5 @@ public class ProgramRepository {
 
     public void updateLastOpenedAt(int programId, Date lastOpenedAt) {
         programDao.updateLastOpenedAt(programId, lastOpenedAt);
-    }
-
-    public Maybe<Save> getSaveOfProgram(int programId) {
-        return saveDao.getSaveByProgramId(programId);
     }
 }

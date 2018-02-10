@@ -33,9 +33,9 @@ public class BuiltInProgramsProvider {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    return new Program(0, p.title, true,
+                    return new Program(null, p.title, true,
                             p.author, p.releaseDate, p.description,
-                            bytecode, null);
+                            bytecode, null, null);
                 })
                 .toList();
     }
