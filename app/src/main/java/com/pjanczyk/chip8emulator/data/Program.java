@@ -21,7 +21,7 @@ public class Program {
     @NonNull
     public final String name;
     @NonNull
-    public final boolean isBuiltIn;
+    public final Boolean isBuiltIn;
     @Nullable
     public final String author;
     @Nullable
@@ -35,9 +35,9 @@ public class Program {
     @Nullable
     public final Chip8State quickSave;
 
-    public Program(Integer id,
+    public Program(@Nullable Integer id,
                    @NonNull String name,
-                   boolean isBuiltIn,
+                   @NonNull Boolean isBuiltIn,
                    @Nullable String author,
                    @Nullable String releaseDate,
                    @Nullable String description,
@@ -53,5 +53,89 @@ public class Program {
         this.bytecode = bytecode;
         this.lastOpenedAt = lastOpenedAt;
         this.quickSave = quickSave;
+    }
+
+    public Builder copy() {
+        return new Builder(this);
+    }
+
+    public static class Builder {
+        private Integer id = null;
+        private String name = null;
+        private Boolean isBuiltIn = null;
+        private String author = null;
+        private String releaseDate = null;
+        private String description = null;
+        private byte[] bytecode = null;
+        private Date lastOpenedAt = null;
+        private Chip8State quickSave = null;
+
+        public Builder() { }
+
+        Builder(Program program) {
+            id = program.id;
+            name = program.name;
+            isBuiltIn = program.isBuiltIn;
+            author = program.author;
+            releaseDate = program.releaseDate;
+            description = program.description;
+            bytecode = program.bytecode;
+            lastOpenedAt = program.lastOpenedAt;
+            quickSave = program.quickSave;
+        }
+
+        public Builder setId(Integer id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder setBuiltIn(boolean builtIn) {
+            isBuiltIn = builtIn;
+            return this;
+        }
+
+        public Builder setAuthor(String author) {
+            this.author = author;
+            return this;
+        }
+
+        public Builder setReleaseDate(String releaseDate) {
+            this.releaseDate = releaseDate;
+            return this;
+        }
+
+        public Builder setDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder setBytecode(byte[] bytecode) {
+            this.bytecode = bytecode;
+            return this;
+        }
+
+        public Builder setLastOpenedAt(Date lastOpenedAt) {
+            this.lastOpenedAt = lastOpenedAt;
+            return this;
+        }
+
+        public Builder setQuickSave(Chip8State quickSave) {
+            this.quickSave = quickSave;
+            return this;
+        }
+
+        public Program build() {
+            if (name == null || isBuiltIn == null || bytecode == null)
+                throw new IllegalStateException("name, isBuiltIn, bytecode must be set");
+
+            return new Program(id, name, isBuiltIn, author, releaseDate, description, bytecode,
+                    lastOpenedAt, quickSave);
+        }
+
     }
 }

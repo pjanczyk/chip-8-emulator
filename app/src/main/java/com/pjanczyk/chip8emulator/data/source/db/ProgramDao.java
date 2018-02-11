@@ -8,7 +8,6 @@ import android.arch.persistence.room.Update;
 import com.pjanczyk.chip8emulator.data.Program;
 import com.pjanczyk.chip8emulator.data.ProgramInfo;
 
-import java.util.Date;
 import java.util.List;
 
 import io.reactivex.Flowable;
@@ -28,11 +27,6 @@ public interface ProgramDao {
     @Query("SELECT * FROM Program WHERE id = :id")
     Maybe<Program> getProgramById(int id);
 
-    @Query("UPDATE Program " +
-            "SET lastOpenedAt = :lastOpenedAt " +
-            "WHERE id = :id")
-    void updateLastOpenedAt(int id, Date lastOpenedAt);
-
     @Query("SELECT id, name, isBuiltIn, author, releaseDate, description, lastOpenedAt " +
             "FROM Program " +
             "WHERE isBuiltIn = 1")
@@ -44,4 +38,5 @@ public interface ProgramDao {
             "ORDER BY lastOpenedAt DESC " +
             "LIMIT :limit")
     Flowable<List<ProgramInfo>> getRecentPrograms(int limit);
+
 }

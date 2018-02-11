@@ -11,6 +11,7 @@ import com.pjanczyk.chip8emulator.data.source.ProgramRepository;
 import com.pjanczyk.chip8emulator.vm.Chip8EmulationException;
 import com.pjanczyk.chip8emulator.vm.Chip8KeyboardInput;
 import com.pjanczyk.chip8emulator.vm.Chip8ReadOnlyDisplay;
+import com.pjanczyk.chip8emulator.vm.Chip8State;
 import com.pjanczyk.chip8emulator.vm.Chip8VM;
 
 import javax.inject.Inject;
@@ -118,15 +119,43 @@ public class EmulatorViewModel extends ViewModel {
 
     @MainThread
     public void quickSave() {
+        Chip8State quickSave;
+
+        // TODO: synchronization
+        if (vm.isRunning()) {
+            vm.stop();
+            quickSave = vm.saveState();
+            vm.start();
+        } else {
+            quickSave = vm.saveState();
+        }
+
+        Program updatedProgram = program.getValue().copy()
+                .setQuickSave(quickSave)
+                .build();
+
+        program.setValue(updatedProgram);
+        repository.updateProgram(updatedProgram)
+                .subscribeOn(Schedulers.io())
+                .subscribe();
     }
 
     @MainThread
     public void quickRestore() {
+        Chip8State quickSave = program.getValue().quickSave;
+
+        if (vm.isRunning()) {
+            vm.stop();
+            vm.restoreState(quickSave);
+            vm.start();
+        } else {
+            vm.restoreState(quickSave);
+        }
     }
 
     @MainThread
     public void options() {
-
+        // TODO
     }
 
     @Override

@@ -13,6 +13,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import io.reactivex.Flowable;
+import io.reactivex.schedulers.Schedulers;
 
 public class ProgramsViewModel extends ViewModel {
     private static final int RECENT_PROGRAMS_LIMIT = 5;
@@ -39,10 +40,15 @@ public class ProgramsViewModel extends ViewModel {
     }
 
     public void addImportedProgram(String name, byte[] bytecode) {
-        Program program = new Program(null, name, false, null, null,
-                null, bytecode, null, null);
+        Program program = new Program.Builder()
+                .setName(name)
+                .setBuiltIn(false)
+                .setBytecode(bytecode)
+                .build();
 
-        repository.addProgram(program);
+        repository.addProgram(program)
+                .subscribeOn(Schedulers.io())
+                .subscribe();
     }
 
 }
