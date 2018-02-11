@@ -14,30 +14,31 @@ import com.pjanczyk.chip8emulator.vm.Chip8ReadOnlyDisplay;
 import com.pjanczyk.chip8emulator.vm.Chip8State;
 import com.pjanczyk.chip8emulator.vm.Chip8VM;
 
+import java.util.concurrent.Callable;
+
 import javax.inject.Inject;
 
 import io.reactivex.Observable;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 
 public class EmulatorViewModel extends ViewModel {
     private final ProgramRepository repository;
+    private final Chip8VM vm = new Chip8VM();
 
-    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private final MutableLiveData<Program> program = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isRunning = new MutableLiveData<>();
     private final MutableLiveData<Chip8ReadOnlyDisplay> display = new MutableLiveData<>();
-    private final PublishSubject<Chip8EmulationException> emulationError = PublishSubject.create();
 
-    private boolean initialized = false;
-    private Chip8VM vm;
+    private final PublishSubject<Chip8EmulationException> emulationError = PublishSubject.create();
+    private State state = State.INITIAL;
 
     @Inject
     public EmulatorViewModel(ProgramRepository repository) {
         this.repository = repository;
         this.isRunning.setValue(false);
+        this.vm.setListener(new VMListener());
     }
 
     public LiveData<Program> getProgram() {
@@ -62,74 +63,74 @@ public class EmulatorViewModel extends ViewModel {
 
     @MainThread
     public void init(int programId) {
-        if (initialized) return;
-        initialized = true;
+        if (state != State.INITIAL) return;
+        state = State.FETCHING_PROGRAM;
 
-        Disposable disposable = repository.getProgram(programId)
+        repository.getProgram(programId)
                 .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .doOnComplete(() -> {
                     throw new RuntimeException("Program with the given id does not exist");
                 })
-                .subscribe(prog -> {
-                    program.postValue(prog);
-                    isRunning.postValue(true);
-                    vm = new Chip8VM();
-                    // vm.setClockPeriods(1_000_000_000 / 20, 1_000_000_000 / 2);
+                .subscribe(this::onProgramFetched);
+    }
 
-                    vm.setListener(new VMListener());
-                    vm.loadProgram(prog.bytecode);
-                });
-        compositeDisposable.add(disposable);
+    @MainThread
+    private void onProgramFetched(Program program) {
+        vm.loadProgram(program.bytecode);
+        this.program.setValue(program);
+
+        state = State.VM_STOPPED;
     }
 
     @MainThread
     public void resume() {
-        if (!isRunning.getValue()) {
+        if (state == State.VM_STOPPED) {
             isRunning.setValue(true);
             vm.start();
+            state = State.VM_STARTED;
         }
     }
 
     @MainThread
     public void pause() {
-        if (isRunning.getValue()) {
+        if (state == State.VM_STARTED) {
             isRunning.setValue(false);
             vm.stop();
+            state = State.VM_STOPPED;
         }
     }
 
     @MainThread
     public void toggle() {
-        if (isRunning.getValue()) {
+        if (state == State.VM_STARTED) {
             pause();
-        } else {
+        } else if (state == State.VM_STOPPED) {
             resume();
         }
     }
 
     @MainThread
     public void restart() {
-        if (vm.isRunning()) {
-            vm.stop();
-        }
-        vm.clearMemory();
-        vm.loadProgram(program.getValue().bytecode);
-        vm.start();
+        if (state != State.VM_STARTED && state != State.VM_STOPPED) return;
+
+        withPausedVM(() -> {
+            vm.clearMemory();
+            //noinspection ConstantConditions
+            vm.loadProgram(program.getValue().bytecode);
+            return null;
+        });
+
+        resume();
     }
 
     @MainThread
     public void quickSave() {
-        Chip8State quickSave;
+        if (state != State.VM_STARTED && state != State.VM_STOPPED) return;
 
-        // TODO: synchronization
-        if (vm.isRunning()) {
-            vm.stop();
-            quickSave = vm.saveState();
-            vm.start();
-        } else {
-            quickSave = vm.saveState();
-        }
+        Chip8State quickSave = withPausedVM(vm::saveState);
 
+        //noinspection ConstantConditions
         Program updatedProgram = program.getValue().copy()
                 .setQuickSave(quickSave)
                 .build();
@@ -142,15 +143,19 @@ public class EmulatorViewModel extends ViewModel {
 
     @MainThread
     public void quickRestore() {
+        if (state != State.VM_STARTED && state != State.VM_STOPPED) return;
+
+        //noinspection ConstantConditions
         Chip8State quickSave = program.getValue().quickSave;
 
-        if (vm.isRunning()) {
-            vm.stop();
+        if (quickSave == null) return;
+
+        withPausedVM(() -> {
             vm.restoreState(quickSave);
-            vm.start();
-        } else {
-            vm.restoreState(quickSave);
-        }
+            return null;
+        });
+
+        resume();
     }
 
     @MainThread
@@ -158,9 +163,28 @@ public class EmulatorViewModel extends ViewModel {
         // TODO
     }
 
-    @Override
-    protected void onCleared() {
-        compositeDisposable.dispose();
+    @MainThread
+    private <T> T withPausedVM(Callable<T> callable) {
+        try {
+            T result;
+            if (vm.isRunning()) {
+                vm.stop();
+                result = callable.call();
+                vm.start();
+            } else {
+                result = callable.call();
+            }
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private enum State {
+        INITIAL, // initial state after construction
+        FETCHING_PROGRAM, // program has been requested from the repository
+        VM_STOPPED, // program loaded into VM, VM is stopped
+        VM_STARTED  // program loaded into VM, VM is running
     }
 
     private class VMListener implements Chip8VM.Listener {

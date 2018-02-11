@@ -83,14 +83,14 @@ class Chip8Core {
     }
 
     public void restoreState(Chip8State state) {
-        PC = state.PC;
-        V = Stream.of(state.V).mapToInt(e -> (int) e).toArray();
-        I = state.I;
-        memory = Stream.of(state.V).mapToInt(e -> (int) e).toArray();
-        stack = Stream.of(state.stack).map(e -> (int) e)
+        PC = state.PC & 0xFF_FF;
+        V = Stream.of(state.V).mapToInt(e -> e & 0xFF).toArray();
+        I = state.I & 0xFF_FF;
+        memory = Stream.of(state.memory).mapToInt(e -> e & 0xFF).toArray();
+        stack = Stream.of(state.stack).map(e -> e & 0xFF_FF)
                 .collect(Collectors.toCollection(ArrayDeque::new));
-        delayTimer = state.delayTimer;
-        soundTimer = state.soundTimer;
+        delayTimer = state.delayTimer & 0xFF;
+        soundTimer = state.soundTimer & 0xFF;
         display.restoreState(Booleans.toArray(state.display));
     }
 
