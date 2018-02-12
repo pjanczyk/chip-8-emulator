@@ -13,6 +13,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.pjanczyk.chip8emulator.R;
@@ -38,10 +40,17 @@ public class EmulatorActivity extends AppCompatActivity {
     @BindView(R.id.keyboard) KeyboardView keyboardView;
     @BindView(R.id.appbar) AppBarLayout appBar;
     @BindView(R.id.toolbar) Toolbar toolbar;
+    @BindView(R.id.container_display_overlay) View containerDisplayOverlay;
+    @BindView(R.id.container_description) View containerDescription;
     @BindView(R.id.button_restart) Button buttonRestart;
     @BindView(R.id.button_quick_save) Button buttonQuickSave;
     @BindView(R.id.button_quick_restore) Button buttonQuickRestore;
     @BindView(R.id.button_options) Button buttonOptions;
+    @BindView(R.id.button_pause_resume) ImageButton buttonPauseResume;
+    @BindView(R.id.text_name) TextView textName;
+    @BindView(R.id.text_author) TextView textAuthor;
+    @BindView(R.id.text_release_date) TextView textReleaseData;
+    @BindView(R.id.text_description) TextView textDescription;
 
     private EmulatorViewModel viewModel;
 
@@ -66,12 +75,20 @@ public class EmulatorActivity extends AppCompatActivity {
 
         viewModel.getProgram().observe(this, program -> {
             setTitle(program.name);
+            textName.setText(program.name);
+            textAuthor.setText(program.author);
+            textReleaseData.setText(program.releaseDate);
+            textDescription.setText(program.description);
+            buttonQuickRestore.setEnabled(program.quickSave != null);
         });
 
         viewModel.getIsRunning().observe(this, isRunning -> {
-            if (isRunning) {
-                appBar.setVisibility(View.GONE);
+            appBar.setVisibility(isRunning ? View.INVISIBLE : View.VISIBLE);
+            keyboardView.setVisibility(isRunning ? View.VISIBLE : View.INVISIBLE);
+            containerDescription.setVisibility(isRunning ? View.INVISIBLE : View.VISIBLE);
+            buttonPauseResume.setVisibility(isRunning ? View.INVISIBLE : View.VISIBLE);
 
+            if (isRunning) {
                 // Note that some of these constants are new as of API 16 (Jelly Bean)
                 // and API 19 (KitKat). It is safe to use them, as they are inlined
                 // at compile-time and do nothing on earlier devices.
@@ -85,8 +102,6 @@ public class EmulatorActivity extends AppCompatActivity {
                 // Show the system bar
                 displayView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-
-                appBar.setVisibility(View.VISIBLE);
             }
         });
         viewModel.getDisplay().observe(this, displayView::setDisplay);
