@@ -335,6 +335,7 @@ class Chip8Core {
     }
 
     private void op_Bnnn_JP(int instr) {
+        // TODO: probably should be truncated to 16 bits
         PC = (arg_nnn(instr) + V[0]) & 0xFFF;
     }
 
@@ -354,11 +355,10 @@ class Chip8Core {
 
             for (int j = 0; j < 8; j++) {
                 boolean bit = (b & (1 << (7 - j))) != 0;
+                int x = startX + j;
+                int y = startY + i;
 
-                if (bit) {
-                    int x = (startX + j) % display.getWidth();
-                    int y = (startY + i) % display.getHeight();
-
+                if (bit && x < display.getWidth() && y < display.getHeight()) {
                     boolean oldValue = display.getPixel(x, y);
 
                     if (oldValue) {
@@ -409,6 +409,7 @@ class Chip8Core {
     }
 
     private void op_Fx1E_ADD(int instr) {
+        // TODO: probably should be truncated to 16 bits
         I = (I + V[arg_x(instr)]) & 0xFFF;
     }
 
@@ -419,16 +420,19 @@ class Chip8Core {
     private void op_Fx33_LD(int instr) {
         int number = V[arg_x(instr)];
 
+        // TODO: bound check
         memory[I] = number / 100;
         memory[I + 1] = (number / 10) % 10;
         memory[I + 2] = number % 10;
     }
 
     private void op_Fx55_LD(int instr) {
+        // TODO: bound check
         System.arraycopy(V, 0, memory, I, arg_x(instr) + 1);
     }
 
     private void op_Fx65_LD(int instr) {
+        // TODO: bound check
         System.arraycopy(memory, I, V, 0, arg_x(instr) + 1);
     }
 
