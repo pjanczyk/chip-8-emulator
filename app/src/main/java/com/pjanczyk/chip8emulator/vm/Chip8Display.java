@@ -9,14 +9,17 @@ class Chip8Display implements Chip8ReadOnlyDisplay {
 
     private final boolean[] data = new boolean[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 
+    @Override
     public int getWidth() {
         return DISPLAY_WIDTH;
     }
 
+    @Override
     public int getHeight() {
         return DISPLAY_HEIGHT;
     }
 
+    @Override
     public boolean getPixel(int x, int y) {
         if (x < 0 || x >= DISPLAY_WIDTH || y < 0 || y > DISPLAY_HEIGHT) {
             throw new IllegalArgumentException();
