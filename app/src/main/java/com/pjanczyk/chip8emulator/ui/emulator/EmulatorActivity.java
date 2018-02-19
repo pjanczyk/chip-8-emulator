@@ -38,7 +38,6 @@ public class EmulatorActivity extends AppCompatActivity {
 
     @BindView(R.id.display) DisplayView displayView;
     @BindView(R.id.keyboard) KeyboardView keyboardView;
-    @BindView(R.id.appbar) AppBarLayout appBar;
     @BindView(R.id.toolbar) Toolbar toolbar;
     @BindView(R.id.container_display_overlay) View containerDisplayOverlay;
     @BindView(R.id.container_description) View containerDescription;
@@ -83,7 +82,7 @@ public class EmulatorActivity extends AppCompatActivity {
         });
 
         viewModel.getIsRunning().observe(this, isRunning -> {
-            appBar.setVisibility(isRunning ? View.INVISIBLE : View.VISIBLE);
+            containerDisplayOverlay.setVisibility(isRunning ? View.INVISIBLE : View.VISIBLE);
             keyboardView.setVisibility(isRunning ? View.VISIBLE : View.INVISIBLE);
             containerDescription.setVisibility(isRunning ? View.INVISIBLE : View.VISIBLE);
             buttonPauseResume.setVisibility(isRunning ? View.INVISIBLE : View.VISIBLE);

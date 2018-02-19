@@ -18,8 +18,7 @@
             android:name=".ui.programs.ProgramsActivity"
             android:label="@string/title_activity_recent"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
