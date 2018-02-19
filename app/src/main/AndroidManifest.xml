@@ -30,8 +30,7 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_emulator"
             android:parentActivityName=".ui.programs.ProgramsActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/FullscreenTheme">
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.programs.ProgramsActivity"/>
