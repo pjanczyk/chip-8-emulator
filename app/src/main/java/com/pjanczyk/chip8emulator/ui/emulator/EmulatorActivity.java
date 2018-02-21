@@ -67,6 +67,17 @@ public class EmulatorActivity extends AppCompatActivity {
         setContentView(R.layout.activity_emulator);
         ButterKnife.bind(this);
 
+        findViewById(android.R.id.content).setOnApplyWindowInsetsListener((v, insets) -> {
+            int insetLeft = insets.getSystemWindowInsetLeft();
+            int insetTop = insets.getSystemWindowInsetTop();
+            int insetRight = insets.getSystemWindowInsetRight();
+            int insetBottom = insets.getSystemWindowInsetBottom();
+            containerDisplayOverlay.setPadding(insetLeft, insetTop, insetRight, 0);
+            containerDescription.setPadding(insetLeft, 0, insetRight, insetBottom);
+            insets.consumeStableInsets();
+            return insets;
+        });
+
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(EmulatorViewModel.class);
 
         setSupportActionBar(toolbar);
