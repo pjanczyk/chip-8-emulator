@@ -1,11 +1,12 @@
 package com.pjanczyk.chip8emulator.ui.emulator;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.Lifecycle;
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -23,6 +24,8 @@ import com.trello.rxlifecycle2.LifecycleProvider;
 
 import javax.inject.Inject;
 
+import butterknife.BindDimen;
+import butterknife.BindInt;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.AndroidInjection;
@@ -50,6 +53,9 @@ public class EmulatorActivity extends AppCompatActivity {
     @BindView(R.id.text_author) TextView textAuthor;
     @BindView(R.id.text_release_date) TextView textReleaseData;
     @BindView(R.id.text_description) TextView textDescription;
+
+    @BindInt(android.R.integer.config_shortAnimTime) int shortAnimationTime;
+    @BindDimen(R.dimen.animation_translation) float animationTranslation;
 
     private EmulatorViewModel viewModel;
 
@@ -82,9 +88,6 @@ public class EmulatorActivity extends AppCompatActivity {
         });
 
         viewModel.getIsRunning().observe(this, isRunning -> {
-            containerDisplayOverlay.setVisibility(isRunning ? View.INVISIBLE : View.VISIBLE);
-            keyboardView.setVisibility(isRunning ? View.VISIBLE : View.INVISIBLE);
-            containerDescription.setVisibility(isRunning ? View.INVISIBLE : View.VISIBLE);
             buttonPauseResume.setVisibility(isRunning ? View.INVISIBLE : View.VISIBLE);
 
             if (isRunning) {
@@ -97,10 +100,47 @@ public class EmulatorActivity extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+
+                containerDisplayOverlay.animate()
+                        .alpha(0f)
+                        .setDuration(shortAnimationTime)
+                        .setListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                containerDisplayOverlay.setVisibility(View.GONE);
+                            }
+                        });
+
+                containerDescription.animate()
+                        .alpha(0f)
+                        .translationY(animationTranslation)
+                        .setDuration(shortAnimationTime)
+                        .setListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                containerDescription.setVisibility(View.GONE);
+                            }
+                        });
+
             } else {
                 // Show the system bar
                 displayView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+
+                containerDisplayOverlay.setAlpha(0f);
+                containerDisplayOverlay.setVisibility(View.VISIBLE);
+                containerDisplayOverlay.animate()
+                        .alpha(1f)
+                        .setDuration(shortAnimationTime)
+                        .setListener(null);
+
+                containerDescription.setAlpha(0f);
+                containerDescription.setVisibility(View.VISIBLE);
+                containerDescription.animate()
+                        .alpha(1f)
+                        .translationY(0f)
+                        .setDuration(shortAnimationTime)
+                        .setListener(null);
             }
         });
         viewModel.getDisplay().observe(this, displayView::setDisplay);
