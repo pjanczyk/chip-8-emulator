@@ -104,7 +104,6 @@ public class EmulatorActivity extends AppCompatActivity {
         });
 
         viewModel.getIsRunning().observe(this, isRunning -> {
-            buttonPauseResume.setVisibility(isRunning ? View.INVISIBLE : View.VISIBLE);
 
             if (isRunning) {
                 // Note that some of these constants are new as of API 16 (Jelly Bean)
@@ -116,6 +115,16 @@ public class EmulatorActivity extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+
+                buttonPauseResume.animate()
+                        .alpha(0f)
+                        .setDuration(shortAnimationTime)
+                        .setListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                buttonPauseResume.setVisibility(View.GONE);
+                            }
+                        });
 
                 containerDisplayOverlay.animate()
                         .alpha(0f)
@@ -142,6 +151,13 @@ public class EmulatorActivity extends AppCompatActivity {
                 // Show the system bar
                 displayView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+
+                buttonPauseResume.setAlpha(0f);
+                buttonPauseResume.setVisibility(View.VISIBLE);
+                buttonPauseResume.animate()
+                        .alpha(1f)
+                        .setDuration(shortAnimationTime)
+                        .setListener(null);
 
                 containerDisplayOverlay.setAlpha(0f);
                 containerDisplayOverlay.setVisibility(View.VISIBLE);

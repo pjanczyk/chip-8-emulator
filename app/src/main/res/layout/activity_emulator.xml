@@ -229,7 +229,7 @@
         android:clickable="false"
         android:elevation="4dp"
         android:focusable="false"
-        android:src="@drawable/ic_play_arrow_white_48dp"
+        android:src="@drawable/ic_pause_white_48dp"
         app:layout_constraintBottom_toBottomOf="@+id/frameLayout1"
         app:layout_constraintEnd_toEndOf="@+id/frameLayout1"
         app:layout_constraintStart_toStartOf="@+id/frameLayout1"
