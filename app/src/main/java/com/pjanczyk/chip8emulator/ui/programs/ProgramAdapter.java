@@ -54,8 +54,20 @@ public class ProgramAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             ItemViewHolder holder = (ItemViewHolder) viewHolder;
             ProgramInfo program = (ProgramInfo) items.get(position);
 
+            String description = "";
+
+            if (program.getAuthor() != null) {
+                description += program.getAuthor();
+            } else {
+                description += "unknown author";
+            }
+
+            if (program.getReleaseDate() != null) {
+                description += ", " + program.getReleaseDate();
+            }
+
             holder.textViewName.setText(program.getName());
-            holder.textViewDetails.setText(program.getAuthor());
+            holder.textViewDetails.setText(description);
 
             holder.itemView.setOnClickListener(v -> {
                 ProgramInfo p = (ProgramInfo) items.get(holder.getAdapterPosition());
