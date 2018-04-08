@@ -16,7 +16,6 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".ui.programs.ProgramsActivity"
-            android:label="@string/title_activity_recent"
             android:launchMode="singleTop"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -28,7 +27,6 @@
         <activity
             android:name=".ui.emulator.EmulatorActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_emulator"
             android:parentActivityName=".ui.programs.ProgramsActivity"
             android:screenOrientation="portrait">
             <meta-data

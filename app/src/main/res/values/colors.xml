@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#212121</color>
     <color name="colorPrimaryDark">#000</color>
-    <color name="colorAccent">#FFF</color>
+    <color name="colorAccent">#009688</color>
 
     <color name="keyboard_button_description_color">#aaa</color>
 </resources>

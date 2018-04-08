@@ -31,7 +31,6 @@ public class ProgramsActivity extends AppCompatActivity {
 
     @Inject ViewModelProvider.Factory viewModelFactory;
 
-    @BindView(R.id.toolbar) Toolbar toolbar;
     @BindView(R.id.fab) FloatingActionButton buttonOpen;
     @BindView(R.id.list) RecyclerView recyclerView;
 
@@ -46,8 +45,6 @@ public class ProgramsActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(ProgramsViewModel.class);
-
-        setSupportActionBar(toolbar);
 
         buttonOpen.setOnClickListener(view -> onButtonOpenClicked());
 
