@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "5af16638f8a435a4d1de90100ff15468",
+    "identityHash": "46b7b4a06fbd4d9f137ae8948be0a752",
     "entities": [
       {
         "tableName": "Program",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `isBuiltIn` INTEGER NOT NULL, `author` TEXT, `releaseDate` TEXT, `description` TEXT, `bytecode` BLOB NOT NULL, `lastOpenedAt` INTEGER, `quickSave` BLOB)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `isBuiltIn` INTEGER NOT NULL, `author` TEXT, `releaseDate` TEXT, `description` TEXT, `keyBinding` TEXT NOT NULL, `bytecode` BLOB NOT NULL, `lastOpenedAt` INTEGER, `quickSave` BLOB)",
         "fields": [
           {
             "fieldPath": "id",
@@ -43,6 +43,12 @@
             "columnName": "description",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "keyBinding",
+            "columnName": "keyBinding",
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
             "fieldPath": "bytecode",
@@ -100,7 +106,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"5af16638f8a435a4d1de90100ff15468\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"46b7b4a06fbd4d9f137ae8948be0a752\")"
     ]
   }
 }

@@ -6,8 +6,8 @@ import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.support.annotation.NonNull;
 
-import com.pjanczyk.chip8emulator.data.source.xml.BuiltInProgramsProvider;
 import com.pjanczyk.chip8emulator.data.Program;
+import com.pjanczyk.chip8emulator.data.source.json.BuiltInProgramsProvider;
 
 import java.util.List;
 import java.util.concurrent.Executors;

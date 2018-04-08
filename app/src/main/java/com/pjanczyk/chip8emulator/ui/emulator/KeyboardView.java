@@ -17,7 +17,7 @@ public class KeyboardView extends TableLayout {
     private static final int COLUMNS = 4;
     private static final int ROWS = 4;
 
-    private static final String[] KEY_DESCRIPTIONS = {
+    private static final String[] KEY_NAMES = {
             "1", "2", "3", "C",
             "4", "5", "6", "D",
             "7", "8", "9", "E",
@@ -69,7 +69,7 @@ public class KeyboardView extends TableLayout {
                 button.setLayoutParams(
                         new TableRow.LayoutParams(0, TableRow.LayoutParams.MATCH_PARENT, 1f));
 
-                button.setText(KEY_DESCRIPTIONS[index]);
+                button.setText(KEY_NAMES[index]);
                 button.setTag(KEY_VALUES[index]);
 
                 button.setOnTouchListener(buttonTouchListener);

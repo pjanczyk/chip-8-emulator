@@ -6,6 +6,7 @@ import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.pjanczyk.chip8emulator.data.source.KeyBinding;
 import com.pjanczyk.chip8emulator.vm.Chip8State;
 
 import java.util.Date;
@@ -29,6 +30,8 @@ public class Program {
     @Nullable
     public final String description;
     @NonNull
+    public final KeyBinding keyBinding;
+    @NonNull
     public final byte[] bytecode;
     @Nullable
     public final Date lastOpenedAt;
@@ -41,6 +44,7 @@ public class Program {
                    @Nullable String author,
                    @Nullable String releaseDate,
                    @Nullable String description,
+                   @NonNull KeyBinding keyBinding,
                    @NonNull byte[] bytecode,
                    @Nullable Date lastOpenedAt,
                    @Nullable Chip8State quickSave) {
@@ -50,6 +54,7 @@ public class Program {
         this.author = author;
         this.releaseDate = releaseDate;
         this.description = description;
+        this.keyBinding = keyBinding;
         this.bytecode = bytecode;
         this.lastOpenedAt = lastOpenedAt;
         this.quickSave = quickSave;
@@ -66,6 +71,7 @@ public class Program {
         private String author = null;
         private String releaseDate = null;
         private String description = null;
+        private KeyBinding keyBinding = null;
         private byte[] bytecode = null;
         private Date lastOpenedAt = null;
         private Chip8State quickSave = null;
@@ -114,6 +120,11 @@ public class Program {
             return this;
         }
 
+        public Builder setKeyBinding(KeyBinding keyBinding) {
+            this.keyBinding = keyBinding;
+            return this;
+        }
+
         public Builder setBytecode(byte[] bytecode) {
             this.bytecode = bytecode;
             return this;
@@ -130,11 +141,11 @@ public class Program {
         }
 
         public Program build() {
-            if (name == null || isBuiltIn == null || bytecode == null)
-                throw new IllegalStateException("name, isBuiltIn, bytecode must be set");
+            if (name == null || isBuiltIn == null || bytecode == null || keyBinding == null)
+                throw new IllegalStateException("name, isBuiltIn, bytecode, keyBinding must be set");
 
-            return new Program(id, name, isBuiltIn, author, releaseDate, description, bytecode,
-                    lastOpenedAt, quickSave);
+            return new Program(id, name, isBuiltIn, author, releaseDate, description,
+                    keyBinding, bytecode, lastOpenedAt, quickSave);
         }
 
     }
