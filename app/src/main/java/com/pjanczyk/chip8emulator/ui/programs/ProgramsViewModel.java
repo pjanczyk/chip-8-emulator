@@ -6,9 +6,10 @@ import android.arch.lifecycle.ViewModel;
 
 import com.google.common.collect.ImmutableList;
 import com.pjanczyk.chip8emulator.data.Program;
+import com.pjanczyk.chip8emulator.data.ProgramInfo;
 import com.pjanczyk.chip8emulator.data.source.ProgramRepository;
 
-import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -49,6 +50,17 @@ public class ProgramsViewModel extends ViewModel {
 
         repository.addProgram(program)
                 .subscribeOn(Schedulers.io())
+                .subscribe();
+    }
+
+    public void programOpened(ProgramInfo programInfo) {
+        repository.getProgram(programInfo.getId())
+                .subscribeOn(Schedulers.io())
+                .flatMapCompletable(program ->
+                        repository.updateProgram(program.copy()
+                                .setLastOpenedAt(new Date())
+                                .build())
+                )
                 .subscribe();
     }
 

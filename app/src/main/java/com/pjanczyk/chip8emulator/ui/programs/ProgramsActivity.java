@@ -86,6 +86,8 @@ public class ProgramsActivity extends AppCompatActivity {
     }
 
     private void onProgramClicked(ProgramInfo program) {
+        viewModel.programOpened(program);
+
         Intent intent = new Intent(this, EmulatorActivity.class);
         intent.putExtra(EmulatorActivity.EXTRA_PROGRAM_ID, program.getId());
         startActivity(intent);
