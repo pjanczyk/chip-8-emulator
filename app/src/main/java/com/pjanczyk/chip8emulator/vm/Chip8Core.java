@@ -59,6 +59,10 @@ class Chip8Core {
         return keyboard;
     }
 
+    public boolean isPlayingTone() {
+        return soundTimer != 0;
+    }
+
     public void loadProgram(byte[] program) {
         if (program.length > 4096 - 512) {
             throw new IllegalArgumentException("Program cannot longer than 3584 bytes");

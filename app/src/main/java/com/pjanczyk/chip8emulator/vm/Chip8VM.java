@@ -23,6 +23,8 @@ public class Chip8VM {
 
     private final Chip8Core core;
 
+    private volatile boolean isPlayingTone;
+
     public Chip8VM() {
         core = new Chip8Core(new Chip8Display(), new Chip8Keyboard());
     }
@@ -142,6 +144,16 @@ public class Chip8VM {
         Log.v(TAG, "onTimerClockTick");
 
         core.decreaseTimers();
+
+        boolean isPlayingTone = core.isPlayingTone();
+        if (isPlayingTone != this.isPlayingTone) {
+            this.isPlayingTone = isPlayingTone;
+
+            Listener listener = this.listener;
+            if (listener != null) {
+                listener.onIsPlayingToneChanged(isPlayingTone);
+            }
+        }
     }
 
     private void assertStopped() {
@@ -154,5 +166,7 @@ public class Chip8VM {
         void onDisplayRedraw(Chip8ReadOnlyDisplay display);
 
         void onError(Chip8EmulationException ex);
+
+        void onIsPlayingToneChanged(boolean isPlayingTone);
     }
 }

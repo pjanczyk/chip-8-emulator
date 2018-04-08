@@ -4,6 +4,8 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.support.annotation.AnyThread;
 import android.support.annotation.MainThread;
 
@@ -35,6 +37,9 @@ public class EmulatorViewModel extends ViewModel {
 
     private final PublishSubject<Chip8EmulationException> emulationError = PublishSubject.create();
     private State state = State.INITIAL;
+
+    private final ToneGenerator toneGenerator =
+            new ToneGenerator(AudioManager.STREAM_MUSIC, 100);
 
     @Inject
     public EmulatorViewModel(ProgramRepository repository) {
@@ -205,6 +210,16 @@ public class EmulatorViewModel extends ViewModel {
         @Override
         public void onError(Chip8EmulationException ex) {
             emulationError.onNext(ex);
+        }
+
+        @AnyThread
+        @Override
+        public void onIsPlayingToneChanged(boolean isPlayingTone) {
+            if (isPlayingTone) {
+                toneGenerator.startTone(ToneGenerator.TONE_CDMA_DIAL_TONE_LITE);
+            } else {
+                toneGenerator.stopTone();
+            }
         }
     }
 
