@@ -85,6 +85,7 @@ public class Program {
             author = program.author;
             releaseDate = program.releaseDate;
             description = program.description;
+            keyBinding = program.keyBinding;
             bytecode = program.bytecode;
             lastOpenedAt = program.lastOpenedAt;
             quickSave = program.quickSave;
