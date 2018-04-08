@@ -6,11 +6,13 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.TextView;
 
 import com.pjanczyk.chip8emulator.R;
+import com.pjanczyk.chip8emulator.data.source.KeyBinding;
 
 public class KeyboardView extends TableLayout {
 
@@ -29,6 +31,7 @@ public class KeyboardView extends TableLayout {
             0x7, 0x8, 0x9, 0xE,
             0xA, 0x0, 0xB, 0xF
     };
+    private final TextView[] buttonDescriptions = new TextView[16];
 
     private KeyListener keyListener;
 
@@ -63,21 +66,33 @@ public class KeyboardView extends TableLayout {
             for (int c = 0; c < COLUMNS; c++) {
 
                 int index = r * COLUMNS + c;
-                Button button = (Button) inflater.inflate(
+                ViewGroup button = (ViewGroup) inflater.inflate(
                         R.layout.keyboard_button, null, false);
 
                 button.setLayoutParams(
                         new TableRow.LayoutParams(0, TableRow.LayoutParams.MATCH_PARENT, 1f));
 
-                button.setText(KEY_NAMES[index]);
-                button.setTag(KEY_VALUES[index]);
+                button.<TextView>findViewById(R.id.text_button_name).setText(KEY_NAMES[index]);
 
+                button.setTag(KEY_VALUES[index]);
                 button.setOnTouchListener(buttonTouchListener);
+
+                buttonDescriptions[KEY_VALUES[index]] =
+                        button.findViewById(R.id.text_button_description);
 
                 row.addView(button);
             }
 
             this.addView(row);
+        }
+    }
+
+    public void setKeyBinding(KeyBinding keyBinding) {
+        for (int i = 0; i < 16; i++) {
+            String description = keyBinding.getKeyDescription(i);
+            if (description != null) {
+                buttonDescriptions[i].setText(description);
+            }
         }
     }
 

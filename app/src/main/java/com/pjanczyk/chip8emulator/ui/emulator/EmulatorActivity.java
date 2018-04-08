@@ -154,7 +154,10 @@ public class EmulatorActivity extends AppCompatActivity {
                         .setListener(null);
             }
         });
+
         viewModel.getDisplay().observe(this, displayView::setDisplay);
+
+        viewModel.getKeyBinding().observe(this, keyboardView::setKeyBinding);
 
         viewModel.getEmulationError()
                 .compose(lifecycleProvider.bindToLifecycle())
@@ -167,9 +170,7 @@ public class EmulatorActivity extends AppCompatActivity {
 
         displayView.setOnClickListener(view -> viewModel.toggle());
 
-        keyboardView.setKeyListener((key, pressed) -> {
-            viewModel.getKeyboard().setKeyPressed(key, pressed);
-        });
+        keyboardView.setKeyListener(viewModel.getKeyboard()::setKeyPressed);
 
         buttonRestart.setOnClickListener(v -> viewModel.restart());
         buttonQuickSave.setOnClickListener(v -> viewModel.quickSave());

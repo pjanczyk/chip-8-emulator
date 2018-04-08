@@ -2,11 +2,13 @@ package com.pjanczyk.chip8emulator.ui.emulator;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
 import android.support.annotation.AnyThread;
 import android.support.annotation.MainThread;
 
 import com.pjanczyk.chip8emulator.data.Program;
+import com.pjanczyk.chip8emulator.data.source.KeyBinding;
 import com.pjanczyk.chip8emulator.data.source.ProgramRepository;
 import com.pjanczyk.chip8emulator.vm.Chip8EmulationException;
 import com.pjanczyk.chip8emulator.vm.Chip8KeyboardInput;
@@ -55,6 +57,11 @@ public class EmulatorViewModel extends ViewModel {
 
     public Chip8KeyboardInput getKeyboard() {
         return vm.getKeyboard();
+    }
+
+    public LiveData<KeyBinding> getKeyBinding() {
+        return Transformations.map(program,
+                program -> program != null ? program.keyBinding : null);
     }
 
     public Observable<Chip8EmulationException> getEmulationError() {
