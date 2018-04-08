@@ -29,7 +29,8 @@ public interface ProgramDao {
 
     @Query("SELECT id, name, isBuiltIn, author, releaseDate, description, lastOpenedAt " +
             "FROM Program " +
-            "WHERE isBuiltIn = 1")
+            "WHERE isBuiltIn = 1 " +
+            "ORDER BY name")
     Flowable<List<ProgramInfo>> getBuiltInPrograms();
 
     @Query("SELECT id, name, isBuiltIn, author, releaseDate, description, lastOpenedAt " +
