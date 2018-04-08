@@ -8,6 +8,7 @@ import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -18,9 +19,13 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.annimon.stream.Stream;
 import com.pjanczyk.chip8emulator.R;
 import com.trello.lifecycle2.android.lifecycle.AndroidLifecycle;
 import com.trello.rxlifecycle2.LifecycleProvider;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
 
@@ -175,7 +180,7 @@ public class EmulatorActivity extends AppCompatActivity {
         buttonRestart.setOnClickListener(v -> viewModel.restart());
         buttonQuickSave.setOnClickListener(v -> viewModel.quickSave());
         buttonQuickRestore.setOnClickListener(v -> viewModel.quickRestore());
-        buttonOptions.setOnClickListener(v -> viewModel.options());
+        buttonOptions.setOnClickListener(v -> showOptions());
     }
 
     @Override
@@ -204,6 +209,26 @@ public class EmulatorActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showOptions() {
+        List<Integer> frequencies = viewModel.getAvailableEmulationFrequencies();
+        AtomicInteger frequency = new AtomicInteger(viewModel.getEmulationFrequency());
+
+        String[] labels = Stream.of(frequencies)
+                .map(f -> f + " Hz")
+                .toArray(String[]::new);
+
+        new AlertDialog.Builder(this)
+                .setSingleChoiceItems(labels, frequencies.indexOf(frequency.get()),
+                        (dialog, which) -> frequency.set(frequencies.get(which)))
+                .setTitle("Change emulation speed")
+                .setPositiveButton("Save", (dialog, which) -> {
+                    viewModel.setEmulationFrequency(frequency.get());
+                    dialog.dismiss();
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
 }

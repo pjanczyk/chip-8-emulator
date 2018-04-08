@@ -9,6 +9,7 @@ import android.media.ToneGenerator;
 import android.support.annotation.AnyThread;
 import android.support.annotation.MainThread;
 
+import com.google.common.collect.ImmutableList;
 import com.pjanczyk.chip8emulator.data.Program;
 import com.pjanczyk.chip8emulator.data.source.KeyBinding;
 import com.pjanczyk.chip8emulator.data.source.ProgramRepository;
@@ -18,6 +19,7 @@ import com.pjanczyk.chip8emulator.vm.Chip8ReadOnlyDisplay;
 import com.pjanczyk.chip8emulator.vm.Chip8State;
 import com.pjanczyk.chip8emulator.vm.Chip8VM;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
@@ -28,6 +30,9 @@ import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 
 public class EmulatorViewModel extends ViewModel {
+    private final List<Integer> availableEmulationFrequencies =
+            ImmutableList.of(100, 250, 500, 750, 1000); // Hz
+
     private final ProgramRepository repository;
     private final Chip8VM vm = new Chip8VM();
 
@@ -36,16 +41,29 @@ public class EmulatorViewModel extends ViewModel {
     private final MutableLiveData<Chip8ReadOnlyDisplay> display = new MutableLiveData<>();
 
     private final PublishSubject<Chip8EmulationException> emulationError = PublishSubject.create();
-    private State state = State.INITIAL;
 
     private final ToneGenerator toneGenerator =
             new ToneGenerator(AudioManager.STREAM_MUSIC, 100);
+
+    private State state = State.INITIAL;
+
+    private int emulationFrequency;
 
     @Inject
     public EmulatorViewModel(ProgramRepository repository) {
         this.repository = repository;
         this.isRunning.setValue(false);
         this.vm.setListener(new VMListener());
+        this.setEmulationFrequency(500); // 500 Hz
+    }
+
+
+    public List<Integer> getAvailableEmulationFrequencies() {
+        return availableEmulationFrequencies;
+    }
+
+    public int getEmulationFrequency() {
+        return emulationFrequency;
     }
 
     public LiveData<Program> getProgram() {
@@ -171,8 +189,15 @@ public class EmulatorViewModel extends ViewModel {
     }
 
     @MainThread
-    public void options() {
-        // TODO
+    public void setEmulationFrequency(int emulationFrequency) {
+        this.emulationFrequency = emulationFrequency;
+
+        withPausedVM(() -> {
+            vm.setClockPeriods(
+                    1_000_000_000 / emulationFrequency,
+                    Chip8VM.DEFAULT_TIMER_CLOCK_INTERVAL);
+            return null;
+        });
     }
 
     @MainThread
