@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Chip-8 Emulator</string>
+    <string name="app_name">CHIP-8 Emulator</string>
     <string name="quick_save">Quick save</string>
     <string name="quick_restore">Quick restore</string>
     <string name="options">Options</string>
